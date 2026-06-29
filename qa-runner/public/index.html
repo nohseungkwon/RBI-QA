@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AirRBI QA Runner</title>
+<style>
+  :root{--blue:#4f6cf7;--bg:#eef1f8;--card:#fff;--line:#e3e8f2;--tx:#1f2a44;--mut:#7b88a8;--ok:#16a34a;--bad:#dc2626;--warn:#d97706;--man:#9aa6c2;--wait:#cbd5e1;--shadow:0 6px 24px rgba(38,54,110,.08)}
+  *{box-sizing:border-box}
+  body{margin:0;font-family:'Malgun Gothic','Segoe UI',sans-serif;background:var(--bg);color:var(--tx)}
+  header{background:linear-gradient(100deg,#3a52e6,#6a5cf7 55%,#8b5cf6);color:#fff;padding:16px 26px;display:flex;align-items:center;gap:12px}
+  header .sh{width:30px;height:34px;background:#fff;border-radius:7px 7px 16px 16px;display:flex;align-items:center;justify-content:center}
+  header b{font-size:18px}header b .r{color:#ffd6f0}
+  header .tag{font-size:10.5px;color:#dfe6ff;letter-spacing:2px}
+  main{max-width:1180px;margin:22px auto;padding:0 22px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:20px 22px;margin-bottom:18px}
+  h2{margin:0 0 14px;font-size:16px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  .grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+  @media(max-width:760px){.grid{grid-template-columns:1fr}}
+  label.f{display:block;font-size:12.5px;color:var(--mut);margin-bottom:5px;font-weight:600}
+  input[type=text],input[type=password]{width:100%;background:#fbfcff;border:1.5px solid var(--line);border-radius:9px;padding:10px 12px;font-size:13.5px}
+  input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(79,108,247,.15)}
+  .modes{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:16px 0}
+  @media(max-width:760px){.modes{grid-template-columns:1fr}}
+  .mode{border:1.5px solid var(--line);border-radius:12px;padding:12px 14px;cursor:pointer;display:block}
+  .mode:has(input:checked){border-color:var(--blue);background:#f5f7ff}
+  .mode b{font-size:13.5px;margin-left:6px}
+  .mode span{display:block;font-size:11.5px;color:var(--mut);margin-top:4px;margin-left:24px}
+  .ck{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--mut)}
+  button{background:var(--blue);color:#fff;border:0;border-radius:10px;padding:12px 22px;font-size:14px;font-weight:700;cursor:pointer}
+  button:disabled{opacity:.5;cursor:not-allowed}
+  .note{font-size:12px;color:var(--mut);margin-top:10px}
+  /* 요약 칩 */
+  .sum{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+  .sum div{background:#f6f8fe;border:1px solid var(--line);border-radius:10px;padding:7px 14px;font-size:12px;min-width:62px;text-align:center}
+  .sum b{font-size:17px;display:block}
+  .sum .ok b{color:var(--ok)}.sum .warn b{color:var(--warn)}.sum .man b{color:var(--man)}.sum .bad b{color:var(--bad)}.sum .wait b{color:#64748b}
+  /* 진행 배너 */
+  .nowchecking{display:flex;align-items:center;gap:10px;background:#eef2ff;border:1px solid #c7d2fe;border-radius:10px;padding:11px 14px;font-size:13.5px;font-weight:700;color:#3a52e6;margin-bottom:12px}
+  .nowchecking::before{content:'';width:13px;height:13px;border:2.5px solid #c7d2fe;border-top-color:#4f6cf7;border-radius:50%;animation:spin .8s linear infinite;flex:none}
+  .nowchecking.done{background:#e8f7ee;border-color:#bbf7d0;color:#16a34a}
+  .nowchecking.done::before{display:none}
+  .nowchecking.idle{background:#f6f8fe;border-color:var(--line);color:var(--mut)}
+  .nowchecking.idle::before{display:none}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  /* 체크리스트 */
+  .secgrp{margin-bottom:4px}
+  .sechead{display:flex;align-items:center;gap:8px;margin:8px 0 2px;cursor:pointer;user-select:none;padding:5px 6px;border-radius:8px}
+  .sechead:hover{background:#f5f7ff}
+  .sechead .caret{font-size:10px;color:var(--mut);transition:transform .15s;width:11px;display:inline-block;text-align:center}
+  .secgrp.collapsed .caret{transform:rotate(-90deg)}
+  .sechead .secttl{font-size:12.5px;color:var(--blue);font-weight:700}
+  .sechead .seccnt{margin-left:auto;font-size:11px;color:var(--mut)}
+  .sechead .seccnt b{font-weight:700}.sechead .seccnt .ok{color:var(--ok)}.sechead .seccnt .bad{color:var(--bad)}.sechead .seccnt .warn{color:var(--warn)}
+  .secgrp.hasfail .secttl{color:var(--bad)}
+  .secbody{margin-left:11px;padding-left:16px;border-left:2px solid #e9edf7}   /* 검증 내용을 섹션 안쪽으로 들여쓰기 */
+  .secgrp.collapsed .secbody{display:none}
+  .stp{display:flex;align-items:center;gap:9px;padding:6px 2px;border-bottom:1px solid var(--line);font-size:12.5px}
+  .stp .id{font-family:Consolas,monospace;color:var(--mut);font-size:10.5px;min-width:38px}
+  .stp .ttl{flex:1}
+  .dot{width:9px;height:9px;border-radius:50%;background:var(--wait);flex:none}
+  .dot.run{background:var(--blue);animation:pulse 1s infinite}
+  .dot.pass{background:var(--ok)}.dot.warn{background:var(--warn)}.dot.fail{background:var(--bad)}.dot.manual{background:var(--man)}.dot.skip{background:#64748b}.dot.wait{background:var(--wait)}
+  @keyframes pulse{50%{opacity:.4}}
+  .b{font-size:10px;font-weight:700;border-radius:5px;padding:2px 9px;color:#fff;border:0;cursor:pointer;font-family:inherit}
+  .b.pass{background:var(--ok)}.b.warn{background:var(--warn)}.b.fail{background:var(--bad)}.b.manual{background:var(--man)}.b.skip{background:#64748b}.b.wait{background:#fff;color:var(--mut);border:1px solid var(--line);cursor:default}.b.run{background:var(--blue)}
+  .b.clk{box-shadow:0 1px 4px rgba(38,54,110,.18)}
+  .b.clk::after{content:' ⤢';font-size:8px;opacity:.85}
+  #log{font-family:Consolas,monospace;font-size:11px;color:#33415c;background:#f6f8fe;border-radius:10px;padding:10px 12px;max-height:140px;overflow:auto;margin-top:12px}
+  details summary{cursor:pointer;font-size:12px;color:var(--mut);margin-top:10px}
+  /* 히스토리 */
+  .hrow{display:flex;align-items:center;gap:12px;padding:9px 6px;border-bottom:1px solid var(--line);font-size:12.5px;cursor:pointer;border-radius:8px}
+  .hrow:hover{background:#f5f7ff}
+  .hrow.active{background:#eef2ff;border:1px solid #c7d2fe}
+  .hstamp{font-family:Consolas,monospace;font-weight:700;min-width:150px}
+  .hmode{font-size:10.5px;color:#fff;background:var(--blue);border-radius:5px;padding:1px 7px}
+  .hmode.iso{background:#8b5cf6}
+  .hsum{color:var(--mut)}.hsum b{font-size:13px}.hsum .ok{color:var(--ok)}.hsum .warn{color:var(--warn)}.hsum .man{color:var(--man)}.hsum .bad{color:var(--bad)}
+  .htgt{margin-left:auto;color:var(--mut);font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:230px}
+  .mut{color:var(--mut);font-size:12px}
+  a.rep{font-size:12.5px;color:var(--blue)}
+  /* 모달 */
+  .ov{position:fixed;inset:0;background:rgba(20,28,54,.55);display:none;align-items:center;justify-content:center;z-index:50;padding:24px}
+  .ov.on{display:flex}
+  .modal{background:#fff;border-radius:16px;max-width:1040px;width:100%;max-height:88vh;overflow:auto;box-shadow:0 20px 60px rgba(20,28,54,.4)}
+  .modal .mh{display:flex;align-items:center;gap:10px;padding:16px 20px;border-bottom:1px solid var(--line);position:sticky;top:0;background:#fff}
+  .modal .mh .id{font-family:Consolas,monospace;color:var(--mut);font-size:11px}
+  .modal .mh h3{margin:0;font-size:15px;flex:1}
+  .modal .x{margin-left:auto;background:#f1f5f9;color:#475569;border-radius:8px;padding:6px 12px;font-size:13px}
+  .modal .mb{padding:18px 20px}
+  .modal .nt{font-size:12.5px;color:#475569;background:#f6f8fe;border-radius:8px;padding:9px 12px;margin-bottom:14px}
+  .imgs{display:flex;gap:16px;flex-wrap:wrap}
+  figure{margin:0}figcaption{font-size:11.5px;color:var(--mut);margin-bottom:5px;font-weight:700}
+  .imgs img{max-width:480px;width:100%;border:1px solid var(--line);border-radius:10px;display:block;cursor:zoom-in}
+</style>
+</head>
+<body>
+<header>
+  <div class="sh">🛡️</div>
+  <div><b>Air<span class="r">RBI</span> QA Runner</b><div class="tag">ZERO TRUST BROWSING · 자동 QA</div></div>
+</header>
+
+<main>
+  <div class="card">
+    <h2>① 서비스 도메인 · 계정 입력</h2>
+    <div class="grid">
+      <div><label class="f">서비스 도메인</label><input id="domain" type="text" value="https://release.aircode.com" placeholder="https://example.aircode.com"></div>
+      <div><label class="f">테스트 타겟 URL (격리로 열 사이트)</label><input id="targetUrl" type="text" value="http://193.200.10.116:8900" placeholder="http://<호스트>:<포트>"></div>
+      <div><label class="f">아이디</label><input id="username" type="text" placeholder="dev01@aircode.com"></div>
+      <div><label class="f">비밀번호</label><input id="password" type="password" placeholder="••••••••"></div>
+    </div>
+    <div class="modes">
+      <label class="mode"><input type="radio" name="mode" value="lite" checked><b>통합 점검 (권장)</b><span>LiteClient UI(네비·메뉴·파일보관함·인쇄·찾기) + 격리 콘텐츠(클립보드·검색·비디오) + CDR + 사용자메뉴 + RBI UI — 한 번에</span></label>
+      <label class="mode"><input type="radio" name="mode" value="isolated"><b>격리 콘텐츠 전용</b><span>테스트 페이지 QA 콘솔만 빠르게 (클립보드·검색·잘라내기·다운로드·비디오)</span></label>
+    </div>
+    <div style="display:flex;align-items:center;gap:18px;flex-wrap:wrap">
+      <button id="runBtn" onclick="run()">▶ QA 실행</button>
+      <button id="stopBtn" onclick="stopRun()" style="display:none;background:#dc2626">⏹ 중지</button>
+      <label class="ck"><input type="checkbox" id="headless"> 백그라운드(headless)</label>
+      <span class="note" id="status"></span>
+    </div>
+    <p class="note">비밀번호는 로컬 QA 자동화 로그인에만 사용되며 디스크에 저장되지 않습니다. 실행 중 Chrome 창이 떠서 자동 조작됩니다.</p>
+  </div>
+
+  <div class="card" id="resultCard">
+    <h2>② 검사 항목 &amp; 결과
+      <span class="note" id="prog"></span>
+      <button id="collapseAllBtn" type="button" onclick="toggleAll()" style="margin-left:auto;padding:5px 12px;font-size:12px;background:#f1f5f9;color:#475569">⊟ 모두 접기</button>
+      <a class="rep" id="fullRep" href="#" target="_blank" style="display:none">↗ 전체 리포트(HTML)</a>
+    </h2>
+    <div id="nowChecking" class="nowchecking idle">결과를 불러오는 중…</div>
+    <div class="sum" id="summary"></div>
+    <div id="steps"></div>
+    <p class="note" id="hint" style="display:none">상태 배지를 클릭하면 동작 전/후(before·after) 캡처를 볼 수 있습니다.</p>
+    <details><summary>실행 로그 보기</summary><div id="log"></div></details>
+  </div>
+
+  <div class="card" id="historyCard">
+    <h2>③ QA 히스토리 <span class="note">이전 실행 클릭 → 그때 결과·캡처 보기</span> <button onclick="loadHistory(true)" style="margin-left:auto;padding:6px 12px;font-size:12px;background:#f1f5f9;color:#475569">↻ 새로고침</button></h2>
+    <div id="history"><div class="mut">불러오는 중…</div></div>
+  </div>
+</main>
+
+<!-- before/after 모달 -->
+<div class="ov" id="overlay" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="mh"><span class="id" id="mId"></span><h3 id="mTitle"></h3><span id="mBadge"></span><button class="x" onclick="closeModal()">✕ 닫기</button></div>
+    <div class="mb"><div class="nt" id="mNote" style="display:none"></div><div class="imgs" id="mImgs"></div></div>
+  </div>
+</div>
+
+<script>
+const stepsEl=document.getElementById('steps'), logEl=document.getElementById('log'), summaryEl=document.getElementById('summary');
+const LABEL={pass:'PASS',warn:'확인',fail:'FAIL',manual:'수동',skip:'중지',wait:'대기',run:'검증중'};
+let curRunId=null, imgBase='', store={}, rows={}, secGroups={}, templateItems=[], activeStamp='';
+
+function val(id){return document.getElementById(id).value.trim();}
+function addLog(m){logEl.insertAdjacentHTML('afterbegin','<div>'+esc(m)+'</div>');}
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+function setNow(text,cls){const n=document.getElementById('nowChecking');n.textContent=text;n.className='nowchecking'+(cls?' '+cls:'');}
+function fmtStamp(s){return /^\d{14}$/.test(s)?s.slice(0,4)+'-'+s.slice(4,6)+'-'+s.slice(6,8)+' '+s.slice(8,10)+':'+s.slice(10,12)+':'+s.slice(12,14):s;}
+
+function secGroup(sec){
+  if(secGroups[sec]) return secGroups[sec];
+  const wrap=document.createElement('div');wrap.className='secgrp';
+  const head=document.createElement('div');head.className='sechead';
+  head.innerHTML='<span class="caret">▾</span><span class="secttl"></span><span class="seccnt"></span>';
+  head.querySelector('.secttl').textContent=sec;
+  head.onclick=()=>{wrap.classList.toggle('collapsed');syncToggleLabel();};
+  const body=document.createElement('div');body.className='secbody';
+  wrap.appendChild(head);wrap.appendChild(body);
+  stepsEl.appendChild(wrap);secGroups[sec]={wrap,body,head};
+  return secGroups[sec];
+}
+function clearList(){stepsEl.innerHTML='';rows={};secGroups={};store={};syncToggleLabel();}
+
+// 섹션별 PASS/확인/FAIL 개수 표시(접혀도 보임) + 실패 섹션 강조
+function updateSecCount(sec){
+  const g=secGroups[sec];if(!g)return;
+  const items=Object.values(store).filter(x=>x.section===sec);
+  const c={pass:0,warn:0,fail:0,manual:0,skip:0,wait:0};
+  items.forEach(x=>c[x.status]=(c[x.status]||0)+1);
+  const p=[];
+  if(c.pass)p.push('<b class="ok">'+c.pass+'</b>P');
+  if(c.warn)p.push('<b class="warn">'+c.warn+'</b>확');
+  if(c.fail)p.push('<b class="bad">'+c.fail+'</b>F');
+  if(c.manual)p.push('<b>'+c.manual+'</b>수');
+  if(c.wait)p.push('<b>'+c.wait+'</b>대기');
+  g.head.querySelector('.seccnt').innerHTML=p.join(' · ')+' <span class="mut">/'+items.length+'</span>';
+  g.wrap.classList.toggle('hasfail',c.fail>0);
+}
+
+// 한 항목 행 생성/갱신 + 데이터 저장(모달용)
+function upsertRow(id,title,section,status,data){
+  const sec=section||'결과';
+  let r=rows[id];
+  if(!r){
+    const g=secGroup(sec);
+    r=document.createElement('div');r.className='stp';r.dataset.id=id;
+    r.innerHTML='<span class="dot"></span><span class="id"></span><span class="ttl"></span><button class="b" type="button"></button>';
+    g.body.appendChild(r);rows[id]=r;
+  }
+  r.querySelector('.id').textContent=id;
+  if(title) r.querySelector('.ttl').textContent=title;
+  if(data){store[id]=Object.assign(store[id]||{},data);}
+  const st=status||'wait';
+  store[id]=Object.assign(store[id]||{},{status:st,title:title||(store[id]&&store[id].title),section:sec});
+  const d=r.querySelector('.dot');d.className='dot '+st;
+  const b=r.querySelector('.b');b.className='b '+st;b.textContent=LABEL[st]||st;
+  const hasImg=store[id]&&(store[id].before||store[id].after||store[id].shot);
+  if(hasImg&&st!=='wait')b.classList.add('clk');
+  updateSecCount(sec);
+  return r;
+}
+// 섹션 전체 접기/펼치기 토글
+function toggleAll(){
+  const gs=Object.values(secGroups);if(!gs.length)return;
+  const anyOpen=gs.some(g=>!g.wrap.classList.contains('collapsed'));
+  gs.forEach(g=>g.wrap.classList.toggle('collapsed',anyOpen));
+  syncToggleLabel();
+}
+function syncToggleLabel(){
+  const gs=Object.values(secGroups);
+  const anyOpen=gs.some(g=>!g.wrap.classList.contains('collapsed'));
+  const btn=document.getElementById('collapseAllBtn');
+  if(btn) btn.textContent=(gs.length&&anyOpen)?'⊟ 모두 접기':'⊞ 모두 펼치기';
+}
+// 완료 결과 볼 때: 전부 PASS인 섹션은 자동 접기(주의 필요한 섹션만 펼침)
+function applyAutoCollapse(){
+  Object.entries(secGroups).forEach(([sec,g])=>{
+    const items=Object.values(store).filter(x=>x.section===sec);
+    const allPass=items.length>0 && items.every(x=>x.status==='pass');
+    g.wrap.classList.toggle('collapsed',allPass);
+  });
+  syncToggleLabel();
+}
+// 상태 배지 클릭 → 모달
+stepsEl.addEventListener('click',e=>{const b=e.target.closest('.b');if(!b)return;const row=b.closest('.stp');if(row)openModal(row.dataset.id);});
+
+function renderSummary(){
+  const c={pass:0,warn:0,fail:0,manual:0,skip:0,wait:0};
+  Object.values(store).forEach(x=>{c[x.status]=(c[x.status]||0)+1;});
+  const tot=Object.keys(store).length;
+  summaryEl.innerHTML=
+    '<div><b>'+tot+'</b>전체</div>'+
+    '<div class="ok"><b>'+c.pass+'</b>PASS</div>'+
+    '<div class="warn"><b>'+c.warn+'</b>확인</div>'+
+    '<div class="man"><b>'+c.manual+'</b>수동</div>'+
+    '<div class="bad"><b>'+c.fail+'</b>FAIL</div>'+
+    (c.skip?'<div><b>'+c.skip+'</b>중지</div>':'')+
+    (c.wait?'<div class="wait"><b>'+c.wait+'</b>대기</div>':'');
+}
+
+// 모달
+function openModal(id){
+  const d=store[id];if(!d)return;
+  document.getElementById('mId').textContent=id;
+  document.getElementById('mTitle').textContent=d.title||'';
+  const mb=document.getElementById('mBadge');mb.className='b '+(d.status||'wait');mb.textContent=LABEL[d.status]||d.status||'';
+  const nt=document.getElementById('mNote');if(d.note){nt.style.display='';nt.textContent=d.note;}else nt.style.display='none';
+  const base=d.base||imgBase;
+  const fig=(lab,f)=>'<figure><figcaption>'+lab+'</figcaption><a href="'+base+f+'" target="_blank"><img src="'+base+f+'" loading="lazy"></a></figure>';
+  let h='';
+  if(d.before||d.after) h=(d.before?fig('동작 전 (before)',d.before):'')+(d.after?fig('동작 후 (after)',d.after):'');
+  else if(d.shot) h=fig('캡처',d.shot);
+  else h='<div class="mut">이 항목은 캡처 이미지가 없습니다 (존재확인/수동 항목).'+(d.status==='wait'?' 아직 검증 전입니다.':'')+'</div>';
+  document.getElementById('mImgs').innerHTML=h;
+  document.getElementById('overlay').classList.add('on');
+}
+function closeModal(){document.getElementById('overlay').classList.remove('on');}
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeModal();});
+
+// 과거 실행 결과 로드 → 체크리스트 표시
+async function loadRun(base,stamp,fromHistory){
+  try{
+    const root=base+stamp+'/';
+    const data=await (await fetch(root+'report.json')).json();
+    const items=data.results||data.steps||[];
+    templateItems=items.map(x=>({id:x.id,title:x.title,section:x.section}));
+    activeStamp=stamp; imgBase=root;
+    clearList();
+    for(const it of items) upsertRow(it.id,it.title,it.section,it.status,{before:it.before,after:it.after,shot:it.shot,note:it.note,base:root,title:it.title});
+    renderSummary();applyAutoCollapse();
+    document.getElementById('fullRep').href=root+'report.html';document.getElementById('fullRep').style.display='';
+    document.getElementById('hint').style.display='';
+    const sm=data.summary||{};
+    setNow('📂 '+fmtStamp(stamp)+' 결과 — PASS '+(sm.pass||0)+' · 확인 '+(sm.warn||0)+' · 수동 '+(sm.manual||0)+' · FAIL '+(sm.fail||0),'done');
+    document.querySelectorAll('.hrow').forEach(h=>h.classList.toggle('active',h.dataset.stamp===stamp));
+    if(fromHistory) document.getElementById('resultCard').scrollIntoView({behavior:'smooth'});
+  }catch(e){setNow('결과를 불러오지 못했습니다: '+e.message,'idle');}
+}
+
+// 히스토리
+async function loadHistory(refresh){
+  const el=document.getElementById('history');
+  let list=[];
+  try{list=await (await fetch('/api/history')).json();}catch(e){el.innerHTML='<div class="mut">히스토리 로드 실패</div>';return;}
+  if(!list.length){el.innerHTML='<div class="mut">이전 실행 없음 — 위에서 QA를 실행하세요.</div>';return;}
+  el.innerHTML=list.map(h=>{const s=h.summary||{};return(
+    '<div class="hrow" data-base="'+h.base+'" data-stamp="'+h.stamp+'">'+
+      '<span class="hstamp">'+fmtStamp(h.stamp)+'</span>'+
+      '<span class="hmode'+(h.mode==='isolated'?' iso':'')+'">'+(h.mode==='isolated'?'격리전용':'통합')+'</span>'+
+      '<span class="hsum"><b class="ok">'+(s.pass||0)+'</b> · <b class="warn">'+(s.warn||0)+'</b> · <b class="man">'+(s.manual||0)+'</b> · <b class="bad">'+(s.fail||0)+'</b> <span class="mut">/ '+h.total+'</span></span>'+
+      '<span class="htgt">'+esc(h.target||'')+'</span>'+
+    '</div>');}).join('');
+  el.querySelectorAll('.hrow').forEach(row=>row.onclick=()=>loadRun(row.dataset.base,row.dataset.stamp,true));
+  // 첫 로드면 최신 실행 결과를 자동 표시
+  if(!refresh && !activeStamp) loadRun(list[0].base,list[0].stamp,false);
+}
+
+async function run(){
+  const mode=document.querySelector('input[name=mode]:checked').value;
+  const cfg={domain:val('domain'),targetUrl:val('targetUrl'),username:val('username'),password:val('password'),headless:document.getElementById('headless').checked,mode};
+  if(!cfg.domain||!cfg.username||!cfg.password){alert('도메인/아이디/비밀번호를 입력하세요.');return;}
+  document.getElementById('runBtn').disabled=true;
+  document.getElementById('status').textContent='실행 중… (Chrome 창에서 자동 조작)';
+  document.getElementById('fullRep').style.display='none';
+  // 검사 항목을 처음부터 '대기'로 전부 표시(직전 실행 항목을 템플릿으로)
+  clearList();imgBase='';activeStamp='';logEl.innerHTML='';
+  for(const it of templateItems) upsertRow(it.id,it.title,it.section,'wait');
+  renderSummary();
+  setNow(templateItems.length?'🔄 로그인 · 격리 세션 시작 중… (항목 '+templateItems.length+'개 대기)':'🔄 로그인 · 격리 세션 시작 중…');
+  let nPass=0,nTot=0;
+  const res=await fetch('/api/run',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(cfg)});
+  const {runId,base,error}=await res.json();
+  if(error){alert(error);reset();return;}
+  curRunId=runId;const sb=document.getElementById('stopBtn');sb.style.display='';sb.disabled=false;
+  const es=new EventSource('/api/stream/'+runId);
+  es.onmessage=ev=>{
+    const d=JSON.parse(ev.data);
+    if(d.type==='start'){imgBase=(d.base||base)+d.stamp+'/';activeStamp=d.stamp;}
+    else if(d.type==='log')addLog(d.message);
+    else if(d.type==='step-start'){upsertRow(d.id,d.title,d.section,'run');setNow('🔄 검증 중: '+(d.title||d.id));}
+    else if(d.type==='check'){const c=d.check;upsertRow(c.id,c.title,c.section,c.status,{before:c.before,after:c.after,shot:c.shot,note:c.note,base:imgBase,title:c.title});renderSummary();nTot++;if(c.status==='pass')nPass++;document.getElementById('prog').textContent=nPass+'/'+nTot+' pass';setNow('🔄 검증 중: '+c.title+' ['+c.id+']');}
+    else if(d.type==='error')addLog('오류: '+d.message);
+    else if(d.type==='finished'){
+      imgBase=(d.base||base)+d.stamp+'/';
+      // base 갱신을 store 항목에 반영
+      Object.values(store).forEach(x=>{if(!x.base)x.base=imgBase;});
+      document.getElementById('fullRep').href=imgBase+'report.html';document.getElementById('fullRep').style.display='';
+      setNow(d.stopped?'⏹ 중지됨 (부분 결과)':'✅ 전체 검증 완료 — 상태 배지를 눌러 전/후 캡처 확인','done');
+      document.getElementById('status').textContent=d.stopped?'⏹ 중지됨':'완료';
+      document.getElementById('hint').style.display='';
+      applyAutoCollapse();
+      es.close();reset();loadHistory(true);
+    }
+    else if(d.type==='end')es.close();
+  };
+  es.onerror=()=>{es.close();reset();};
+}
+function reset(){document.getElementById('runBtn').disabled=false;document.getElementById('stopBtn').style.display='none';curRunId=null;}
+async function stopRun(){if(!curRunId)return;document.getElementById('stopBtn').disabled=true;document.getElementById('status').textContent='⏹ 중지 요청됨 — 정리 중…';try{await fetch('/api/stop/'+curRunId,{method:'POST'});}catch(e){}}
+
+// 초기 로드: 히스토리 + 최신 결과 표시
+loadHistory(false);
+</script>
+</body>
+</html>

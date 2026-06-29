@@ -1,0 +1,13 @@
+# 의존성
+node_modules/
+
+# QA 실행 결과·캡처(코드 아님 / 계정·세션 스크린샷 포함될 수 있어 제외)
+test-results/
+results/
+downloads/
+**/download_*
+*.log
+
+# OS/에디터
+.DS_Store
+Thumbs.db
