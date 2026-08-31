@@ -257,10 +257,13 @@ flowchart LR
   - 응답 봉투는 기존 동기 API와 동일한 `{status, message, data}` 규약으로 통일 (2026-07-07 담당자 피드백 반영)
   - 브랜치 `feat-viruschaser-scan-callback-20260706`. 남은 작업: 도커 마운트를 entry 스토리지 루트와 동일 절대경로로 정렬, 실동작 검증, 안정화 후 동기 엔드포인트 제거
 
-- **클립보드 통제 고도화 (클라이언트 선행, C1 확장 예정)**: liteclient에 방향·유형별 클립보드 정책 5종 집행 구현 — `allowInternalCopyPaste`(격리 내) / `allowCopyToLocal`(격리→로컬) / `allowPasteFromLocal`(로컬→격리) / `textOnly` / `textToImage`. 브랜치 `feat-clipboard-policy-20260714` (liteclient + liteclient-ui).
-  - 판정 일원화 모듈: `rbi-liteclient\src\v2\solution\ClipboardPolicyManager.js`. **서버 정책 스키마 미확정 → 현재는 이 파일의 DEFAULT_CONFIG 하드코딩(전부 허용=기존 동작)으로만 동작**, sitePolicy.clipboardConfig 병합 로직은 TODO 주석으로 보류.
-  - 스키마 확정 시 함께 움직여야 하는 것(C1 확장): admin 설정 UI·DB(clipboardConfig JSON 5키), ig getAppPolicy 응답, liteclient 병합 로직 활성화. 격리 페이지 자체 JS 복사의 완전 차단은 ug 측 협조 필요.
-  - 정리된 이슈: 미사용 `allowedCopyToLocal`/`allowedLocalCopying` 필드명 불일치(구필드 하위호환 매핑 준비됨), 미정의 `base64ToBlob` ReferenceError 수정, PolicyBox '클립보드' 단일 표기 → 방향별 3항목 분리.
+- **클립보드 4플래그 정책 (2026-08-31 구현·검증 완료, C1 확장 반영됨)**: 서버 스키마가 방향별 4플래그로 확정되어(admin 1.1.9 + dbcs 1.2.8 master, DB 마이그레이션 `1.7.1_01_db.sql`) 클라이언트 집행까지 완료. 브랜치 `feat-clipboard-policy-20260831` (liteclient `6833449`→`8330bef` + liteclient-ui `26fab38`, master 기반 — 구브랜치 20260714는 폐기·수동 포팅 원본).
+  - **스키마(C1)**: `CLIPBOARD_CONFIG` JSON 4키 — `copyAllowed`(격리 내 복사)/`pasteAllowed`(격리 내 붙여넣기)/`clientCopyAllowed`(반출)/`clientPasteAllowed`(반입). 구키 `allowedLocalCopying`은 마이그레이션으로 환산. admin 프리셋 4종(모두 허용/반출 차단/반입 차단/반출·반입 차단) — 4종 모두 격리 내 복사/붙여넣기는 허용. ig는 pass-through(무수정, db 1.2.8 번들 재빌드만).
+  - **LC 집행**: 판정 일원화 `rbi-liteclient\src\v2\solution\ClipboardPolicyManager.js`. Ctrl+C/X는 copyAllowed→clientCopyAllowed(READ 생략) 2단, Ctrl+V는 pasteAllowed→clientPasteAllowed 2단 게이트. TransactionManager READ/READ_TEXT 수신 경로에도 반출 게이트. PolicyBox 방향별 4행 표기, 컨텍스트메뉴 copy/paste 분리 숨김.
+  - **하위호환(핵심)**: clipboardConfig 미수신(null/파싱실패/키 누락) 시 **예전 동작(전부 허용)** — 구서버 사이트에 신클라 배포돼도 동작 불변. ⚠단 신서버 마이그레이션 기본값이 반출 차단이라 신서버+신클라 세트 배포 시 그간 무시되던 어드민 설정이 실제 집행됨(현장 "복사 안 됨" 문의 가능 지점).
+  - **반입 차단 출처판별**: PC 복사는 반드시 격리 창 이탈을 동반한다는 점을 이용 — 마지막 격리 내 복사 후 blur/visibility 이탈이 없으면 격리 출처(조용히 V만 전송), 이탈했었으면 격리 클립보드 해시 대조, 둘 다 아니면 V도 차단+토스트. 반출·반입 모두 차단에서도 격리 내부 복사→붙여넣기 정상.
+  - **검증**: WSL E2E 16조합 전수 + 출처판별 시나리오 PASS — 스크립트 `rbi.ai\qa-runner\clipboard-policy-verify.cjs`(단일 케이스)·`clipboard-policy-sweep.cjs`(16조합)·`clipboard-policy-origin-test.cjs`(출처판별, blur 시뮬). 작업 정본: `rbi-liteclient\docs\2026-08-31_clipboard-policy-4flag-integration.md`.
+  - 남은 것: `textOnly`/`textToImage`는 서버 스키마 미지원(코드 보류·기본 false), 격리 페이지 자체 JS 복사의 완전 차단·격리 내 이미지 복사 출처판별은 ug 측 협조(해시 응답) 필요, master 병합은 admin·dbcs 1.2.8 현장 배포 릴리스와 동기화 권장.
 
 ---
 
@@ -658,9 +661,9 @@ master
   - 내부 동작: dashboard = `build-and-copy.ps1 -Mode <mode>`(빌드+userpage 복사, 버전은 package.json 현행) / liteclient = `copy-dist.ps1 [-dev]`(UI) → `npm run build[-dev]`(버전 현행 유지 입력) → css·dist·font·images·lib·workers·errorDataSet·index.html을 `rbi-client\liteclient`로 복사.
   - 정적 서빙이라 rbi-client 재시작 불필요. 반영 확인: `http://localhost:8080/liteclient/index.html`의 `_VERSION_`, 브라우저는 Ctrl+F5.
 
-### 8.5 로컬 WSL 풀스택 설치 — Rocky8 (2026-07-09 설치, 1.5.6-hotfix 실사 기준)
+### 8.5 로컬 WSL 풀스택 설치 — Rocky8 (2026-07-09 설치 → **2026-07-21 1.6.0 업그레이드**)
 
-이 PC의 WSL `Rocky8` 배포판에 **제품 풀스택(RBI 1.5.6-hotfix)이 rbi-install-scripts 표준 절차로 설치**되어 있다. 8.4의 소스 개발 체인(ig+dbcs)과 별개로, 전 모듈이 제품 패키징 형태로 도는 로컬 검증 환경.
+이 PC의 WSL `Rocky8` 배포판에 **제품 풀스택(RBI 1.6.0)이 rbi-install-scripts 표준 절차로 설치**되어 있다 (최초 1.5.6-hotfix → 2026-07-21 reb 260714 구성 기반 1.6.0 전환). 8.4의 소스 개발 체인(ig+dbcs)과 별개로, 전 모듈이 제품 패키징 형태로 도는 로컬 검증 환경.
 
 **경로 구조** (사용자 `aircode`)
 
@@ -672,13 +675,18 @@ master
 | `/home/aircode/rbi-1.5.6-hotfix` | 설치 원본 (rbi.zip, liteclient-1.5.43-hotfix.xpack, solution.lic, 라이선스 공개키) |
 | `rbi-install-scripts/wsl/` | WSL 전용 보조 (port-forwarding.sh=socat, docker-compose.yml) |
 
-**컨테이너 14개** (전부 `network_mode: host` — 포트 매핑 없이 앱 설정 포트 그대로):
-dbms 1.5.5(MariaDB) · dbcs 1.2.5 · ig 1.1.8 · admin 1.1.7 · ucm 1.2.4 · ugs 1.2.3 · ug 3.3.4(컨테이너명 `ug-5001`) · liteclient 1.5.43 · preview 1.0.8 · proxy 2.0.1 · turnproxy 1.0.3 · ingre 1.0.2 · dlp 1.0.0 · syslogger 1.0.5
+**컨테이너 18개** (전부 `network_mode: host` — 포트 매핑 없이 앱 설정 포트 그대로) — 2026-07-21 1.6.0 기준:
+dbms 1.6.0(MariaDB) · dbcs 1.2.5 · ig 1.1.9 · admin 1.1.7 · ucm 1.2.4 · ugs 1.2.3 · ug 3.3.5(컨테이너명 `ug-5001`, 레플리카 1) · liteclient 1.5.45 · preview 1.0.9-rc1 · proxy 2.1.0 · turnproxy 1.0.3 · ingre 1.0.3-rc1 · dlp 1.0.0 · syslogger 1.0.5 · **entry 1.0.1 · viruschaser 1.0.0 · cdr 1.0.0 · open-api 1.0.0** (1.6.0에서 추가)
 
 **운영 주의**
-- **ug만 `restart=unless-stopped`, 나머지 13개는 `restart=no`** → WSL 재기동 시 ug만 자동 복구. 전체 기동은 rbi-tools MCP `wsl_rbi`(status/start/stop/logs) 또는 WSL 안에서 `deplo batch -r`(의존 포트 체크 후 순서 기동).
+- **ug만 `restart=unless-stopped`, 나머지는 `restart=no`** → WSL 재기동 시 ug만 자동 복구. 전체 기동은 rbi-tools MCP `wsl_rbi`(status/start/stop/logs — start가 ig/ucm 레이스 자동복구 포함) 또는 WSL 안에서 `deplo batch -r`(의존 포트 체크 후 순서 기동).
 - 기동 순서는 syslogger(로깅 드라이버 대상) → dbms → dbcs → 나머지.
+- ⚠ **기동 레이스 (WSL 상시 발생)**: 포트 오픈 ≠ 앱 준비 완료 — dbcs 앱 초기화가 40초+ 걸려, 첫 `batch -r`에서 ig(CommonService null)·ucm(dbcs 등록 Connection refused)이 Exited(1)로 죽는 게 정상. dbcs 안정 후 `deplo run ig ucm` 재기동으로 해소. **재기동하면 사는 것=레이스, 또 죽는 것=설정/데이터 문제.**
+- ⚠ **.local.env는 `RBI_IP=127.0.0.1` 고정** (wizard가 기본 제시하는 172.x WSL IP는 재부팅마다 변동 + ucm 클러스터 신원 불일치 유발). Windows hosts는 `127.0.0.1 airrbi.aircode.com` 한 줄만 활성. 루트 .local.env는 solution.lic의 override — `deplo wizard`로 생성(전체 복사 금지).
+- 1.6.0 전환 시 DB를 초기화함 — **1.5.6 데이터 백업 = `~/cloud/dbms/db.bak-1.5.6`**. 구 DB 위에 신버전을 올리면 ucm "Only ucm own cluster can register"(스테일 클러스터 행) 등으로 기동 실패.
+- cdr는 `~/cloud/cdr/uuid/product_uuid` **파일**이 있어야 기동 (없으면 도커가 디렉터리를 만들어 mount 에러 — WSL은 dmi가 없으면 `uuidgen`으로 생성).
 - Windows에서 원커맨드: `wsl -d Rocky8 -- docker ps -a` 식으로 접근 가능 (기본 사용자가 docker 권한 보유).
+- 설치 절차·트러블슈팅 전체는 `C:\Development\Project\RBI\RBI-1.6.0-현장설치-절차서_reb실습_20260720.md` 참조 (rbi-97 실서버 + WSL 실습 기반).
 
 ### 8.6 로컬 단독 ug 격리 연결 — 8.4 체인에 웹격리 붙이기 (2026-07-14 구축·실검증)
 
@@ -695,14 +703,99 @@ liteclient ─wss://airrbi.aircode.com/scap?serverId=UG_SERVER_10_5001_116─▶
 |---|---|---|
 | Apache wss 프록시 | `httpd.conf`에 `mod_proxy_wstunnel` 활성 + 443 vhost에 `ProxyPass /scap ws://127.0.0.1:5001/scap` (catch-all `/`보다 **앞**) | wss 연결 실패 (IG 모드는 wss 강제 + https 페이지에서 ws:// 혼합콘텐츠 차단이라 ug 직결 불가) |
 | 로컬 DB 등록 | `cl_cluster_tc`에 `UCM-LOCAL-1`(DOMAIN=airrbi.aircode.com, PORT=443 — DOMAIN이 있으면 응답 ipAddress=null) + `cl_conn_client_tc1`에 슬롯 5개(193.200.10.116:5001, `UG_SERVER_10_5001_116`, **UG_TOKEN=ug의 `scap.app.token` 값 필수**). 데브 슬롯(10.25)은 UNAVAILABLE 처리 | UG_TOKEN NULL → ig 서명 NPE로 `getConnectionClient` **500**. 데브 슬롯 살아있으면 데브 UG로 배정됨 |
-| ug 검증토큰 스위치 | `ug\ug.env`의 `verification.token.use=${SCAP_VERIFICATION_TOKEN_USE:-true}` + compose/`docker create -e`에서 `false` 지정. **기본 true라 운영 무영향** | `ScapOwnerTokenMismatchException` — env의 검증토큰이 플레이스홀더(`clientToken`)라 UGS 없는 로컬에선 항상 거절 |
+| ug 검증토큰 스위치 | `ug\ug.env`의 `verification.token.use=${SCAP_VERIFICATION_TOKEN_USE:-true}` — **2026-07-20부터 로컬도 `true`로 전환** (`scap.server.verification.token` 플레이스홀더가 제거되어 기본 null → use=true면 첫 AppLaunch가 실제 clientToken을 자동 세팅, 웹격리·파일보관함 모두 통과). 과거 false 지정은 플레이스홀더 시절 지침 | use=**false**면 AppLaunch에서 `setVerificationToken` 스킵 → **파일보관함 `/auth/handshake`가 "Invalid client token" 401** (이 비교는 플래그와 무관하게 항상 실행). 부작용: 포트당 첫 세션 토큰 고정 — 재로그인 후 AppLaunch 거절 시 `docker restart ug` |
 
 **주의·원복**
 - ug.env는 이미지에 COPY되어 컨테이너에서 source됨 → 수정 반영은 이미지 재빌드 or `docker cp ug.env ug:/cloud/ug.env` 후 재기동. env 추가는 컨테이너 재생성만 가능.
 - dbcs GC가 UNAVAILABLE 슬롯을 주기 삭제 → 데브 슬롯 원복은 `rbi-mcp\backups\backup-ug-tables-20260714.sql` 적재.
 - liteclient 로컬 배포 시 `config` 폴더 누락 금지(deploy-local-client.ps1에 포함됨) — 빠지면 clientConfig.json 404로 클라이언트 설정 전체가 기본값.
 
+**격리 테스트 진입 (2026-07-13 검증)**
+- 포털 로그인 없이 `http://localhost:8080/template.html?url=<대상URL>` 로 바로 격리 세션 테스트 가능.
+- 격리 대상 테스트 사이트: `rbi-test\` (http 5342 + https 5343 self-signed — **File System Access API 재현은 https 필수**, UG는 self-signed 허용). 기동은 MCP `start_servers(rbi-test)` 또는 `node rbi-test\server.js`. 분석 배경·케이스 구성은 `rbi-test\README.md`.
+- 격리 화면은 canvas 픽셀이라 원격 페이지 상태를 직접 못 읽음 → rbi-test 페이지는 `log()`를 `/log` 비콘으로 서버 콘솔에 `[REMOTE]` 중계. 다운로드 이벤트 수신 판정은 liteclient iframe의 `sessionStorage.rbi_download_map`.
+
+**ug 컨테이너 내부 구조·핫패치 (2026-07-13 확인)**
+- 이 컨테이너는 마운트 없이 이미지 내장형. preload 스크립트는 `-Dscap.appbrowser.preload.scripts=rbi-lib.js,rbi.js,scap.js`로 **`/cloud/js/`의 개별 파일**을 로드 (jar 내 `rbi.preload.js` 합본은 이 구성에선 미사용 — 운영 배포본은 합본 사용이므로 반영 대상 구분 주의).
+- rbi.js 핫패치: `docker cp <수정본> ug:/cloud/js/rbi.js && docker restart ug` (preload는 JVM 기동 시 1회 로드라 재시작 필수). 컨테이너 fs 변경은 재시작에도 유지, 이미지에서 재생성하면 원복.
+- ⚠ **Rocky8 혼동 함정**: 로컬 5001 리스너는 Docker Desktop(com.docker.backend)이다. `wsl -d Rocky8 docker ps`에 보이는 `ug-5001`은 8.5장 풀스택 소속으로 **이 체인과 무관**하며, wsl 명령 실행 시마다 distro가 잠깐 부팅되어 항상 "Up N초"로 보이는 것뿐이다(실서비스 아님).
+
+**파일보관함(rbi-entry) 로컬 연결 (2026-07-20 구축·실검증 — `/file/list` 200 관통)**
+
+파일보관함은 ug 내장 파일 핸들러가 아니라 **독립 서버 `rbi-entry`**(Node/Express, `C:\Development\Project\RBI\rbi-entry`)가 담당한다. LC의 CDR 상태 폴링·리포트 API(`/file/report` 등)는 entry에만 있다.
+
+```
+LC ─/api/getConnectionClient─▶ ig (X-Auth-Token 발급, DB UG_TOKEN HMAC)
+LC ─POST /auth/handshake─▶ Apache(443) ─▶ ug(5001) : ES256 쿠키(__Secure-service_access_token, claims: storageId·ugPort) 발급
+LC ─/file/*─▶ Apache(443) ─▶ entry(8090) : 쿠키를 ug JWKS(공개키)로 검증 후 파일 CRUD·스캔 게이팅
+```
+
+- **Apache 443 분기** (catch-all `/`보다 앞, 세그먼트 정규식 — `/authentication.action`(ig)과 충돌 방지):
+  `ProxyPassMatch "^/auth(/.*)?$" http://localhost:5001/auth$1` (ug),
+  `/file`·`/preview`·`/session` 동일 형식으로 `http://localhost:8090` (entry). ※ URL이 `$1`로 시작하면 Apache 파스 오류. 규칙이 없으면 handshake가 ig로 떨어져 403.
+- **entry 기동**: MCP `start_servers(entry)`(all에 포함) 또는 `rbi-mcp\launch\run-entry.cmd`. 런처가 `HTTP_SERVER_HTTP_PORT=8090` + **UG endpoint 3종(`UG_JWKS_ENDPOINT`/`UG_KID_ENDPOINT`/`UG_SESSION_ENDPOINT`)을 `127.0.0.1:5001` 고정** 주입 — 토큰의 `ugPort` claim이 **컨테이너 내부 포트 8100**이라 기본 `{ugPort}` 템플릿이면 JWKS 조회가 미존재 포트로 가서 401남.
+- 잔여 한계(무해): entry audit outbox는 `127.0.0.1:{ugPort}/internal/audit` 코드 고정이라 로컬에선 8100으로 재시도 실패 반복. 스캔 엔진(viruschaser/Sanita) 미설치라 업로드가 '검사중'에 머물면 entry를 `SCAN_ENGINE_MODE=dummy`로 재기동(테스트 전용 모드).
+- ug↔entry 관계(토큰 발급/검증 방향, `/internal/*` 역방향 JWT, UDS 세션 킬)는 `rbi-entry\docs\spec\auth.md`·`docs\spec\interface\auth-ug-internal-interface.md`가 정본.
+
+### 8.7 망연계(CDS) 시연 목업 세팅 — WSL 풀스택 (2026-08-10 구축·양방향 실검증)
+
+시연 영상 녹화용. 8.5장 WSL 스택 위에 FTC 벤더 모사(ftc-dummy)와 목업 카탈로그를 얹어 **반출(pull)·반입(push) 양방향을 실데이터 없이 재현**한다.
+
+**시나리오와 실검증된 화면 흐름**
+1. **반출→첨부**: 격리(ChatGPT 등)에서 파일 첨부 → 파일보관함에 "**망연계 보관중**"(파랑) 목업 4건 → 반출 요청 → 즉시 바이러스/무해화 검사 후 "보관중" 전환 → 선택·첨부. 보관중 파일 삭제 시 다음 목록 동기화 때 망연계 보관중으로 복귀(반복 촬영 가능).
+2. **다운로드→반입**: 격리 다운로드 → 편입·검사 후 "**반입 대기**"(주황) → 반입 요청 → "**반입 접수됨**"(승인 대기) → [auto-approve 워처가 몇 초 내 승인] → 새로고침 → 확정("보관중" 복귀 + 반입 버튼 소멸 + 원격 카탈로그 등재). 상태 계약: entry `PUSHED`(접수) → 카탈로그 sync에 같은 uid 등장 시 `MIRRORED`(확정, 단방향).
+
+**구성 요소** (영구 — 컨테이너 재시작에도 유지)
+- entry: master 번들(1.0.6+) `~/cloud/entry/bin/index.js` + `entry.env`의 `CDS_TRANSFER_*`(ftc-dummy 8099 연동).
+- ftc-dummy: master 번들 `~/cloud/entry/bin/ftc-dummy.js`(컨테이너 `ftc-dummy`가 `/ftc-dummy.js` 마운트 실행). 승인 API `POST /admin/api/inbox/approve`(inbox→catalog 같은 uid 이동 = 결재 승인 모사) 포함.
+- 시드 자산: `~/cloud/entry/ftc-dummy-data/seed-demo/` — `seed.sh`(리셋+목업 4건+워처 기동), `payload_1~4.json`(실제 열리는 한글 PDF 2건+txt 2건), `auto-approve.js`(3초 폴링 자동 승인).
+- ⚠ UG 등록 URL: entry master는 다운로드 편입을 내부 경로로 받는다 — `.local.env`에 `UG_FILE_REGISTER_URL=http://localhost:5000/internal/file/register` 필수(빠지면 401 → 전부 "다운로드 차단"). env는 컨테이너 생성 시 고정이라 변경 시 ug 재생성.
+
+**세팅/복원/상태 — MCP `cds_demo`** (rbi-tools, action: setup/revert/status)
+- `setup` = seed.sh 실행: ftc-dummy 리셋 → 목업 4건 시드 → entry 프로브(count=4) → auto-approve 워처 기동(ftc-dummy 컨테이너 내부 `docker exec -d`). **카탈로그·워처는 인메모리/프로세스라 ftc-dummy 컨테이너 재시작 때마다 setup 재실행 필요.**
+- `revert` = 워처 종료 + `/admin/api/reset`(카탈로그·수신함 비움). 영구 구성(번들·env)은 남긴다 — 언제든 setup 한 번으로 재현.
+- 수동 대안: `wsl -d Rocky8 bash /home/aircode/cloud/entry/ftc-dummy-data/seed-demo/seed.sh`, 관리 화면 http://127.0.0.1:8099/admin (WSL 내부).
+
+**함정 (전부 실측)**
+- **E-07805 규칙 2가지**: ① WSL은 사설 UG 1대 = 동시 격리 1명(다른 계정 세션이 잡으면 거부, max 5는 한 세션 내 탭 수) ② 세션 종료 → UG 자바 exit-after-used 재기동 → UGS 재등록까지 ~1분 공백(이 사이 실행하면 E-07805, 잠시 후 재시도). 스택 재시작 시 ug만 안 따라 돌므로(restart 정책) ucm/ugs 재시작 후엔 `docker restart ug-5001` 필수.
+- 파일 API 직접 호출은 **:9000 포트**(`https://airrbi.aircode.com:9000/file/...`) — 443의 `/file`은 ig로 떨어져 403.
+- 파일보관함은 격리 세션이 떠 있어야 열림("격리된 브라우저가 없습니다").
+- MIRRORED는 별도 라벨 없음("보관중" 표시) — 확정 증거는 반입 버튼 소멸+원격 카탈로그 등재.
+- 자동화(합성 클릭) 검증 시 파일보관함 모달이 DOM에 중복 마운트라 다른 인스턴스를 건드려 의도치 않은 반출 발생 가능(실마우스는 무관).
+- (2026-08-10 현재) 로그인은 ICAM 전용으로 구성됨 — dev01 등 ID/PW가 필요하면 콘솔에서 `document.getElementById('loginForm').style.display='block'` 또는 liteclient 템플릿 `icamLoginOnly=false` 후 재시작.
+
 ---
+
+### 8.8 모바일(폰) 실기기 테스트 환경 — 반응형 브랜치 (2026-08-27 구축·실기기 검증)
+
+경남은행 프로토타입용 **모바일/태블릿 반응형 대응**과, 실기기(폰)에서 로컬 WSL 스택을 테스트하는 구성.
+
+**반응형 브랜치**: `feat-mobile-responsive-20260827` (liteclient·liteclient-ui·dashboard 3개 저장소 공통, 서버 무수정)
+- LC: 터치 연속 스크롤+플링, 소프트 키보드(beforeinput→기존 IME CMD 31 재사용), 툴바 키보드 토글, **loader.js가 부모 문서 뷰포트 주입**(운영 부모 페이지는 ig의 DB ResultTemplate이라 index.html meta는 iframe 내부 문서 = 무효 — loader.js는 부모에서 실행되므로 서버 무수정으로 해결)
+- 게이트 3중: JS `isCoarsePointer()`(pointer:coarse) / CSS `@media (max-width:719px)` / `(hover:none) and (pointer:coarse)` — 데스크톱 동작 무변경 원칙
+- dashboard 두 layout CSS(기본·siteGroup)의 `[mobile]` 블록은 **항상 동일하게 유지**할 것 (airDlp판은 미대응)
+
+**폰 테스트 환경 — "모바일 환경 구성해줘" = MCP `mobile_env`** (action: setup/status/revert)
+- 원리: airrbi.aircode.com은 이 PC hosts 전용 도메인(공인 DNS는 원격 144!). 폰 Wi-Fi **수동 프록시를 이 PC로** 지정하면 `rbi-mcp\launch\phone-proxy.cjs`(8888, 콘솔창)가 WSL 릴레이 루프백으로 터널링한다. HTTPS/wss는 CONNECT 터널이라 인증서·격리(scap, :9000)까지 정상.
+- 폰 설정: 사내 Wi-Fi → Wi-Fi 상세 → 프록시 수동(호스트=**PC 유선 IP**, 포트 8888) → `https://airrbi.aircode.com/userpage/login/`
+- 사전 조건: WSL 스택 기동(`wsl_rbi start`) + 브랜치 빌드 반영(`deploy_local_client(wsl:true)`) + 방화벽 인바운드 8888 허용(규칙 "RBI Phone Proxy 8888", 최초 1회 UAC)
+- 원복: `mobile_env(revert)` + **폰 쪽 프록시 '설정 안 함'** (프록시가 걸린 동안 폰에서 airrbi 외 사이트는 403 — 개방 프록시 방지용 의도된 차단)
+
+**함정 (2026-08-27 실측)**
+1. **사내 Wi-Fi는 무선↔무선 차단** — 폰→PC Wi-Fi IP(193.200.20.x)는 불통, **무선→유선은 허용**이라 프록시 호스트는 반드시 유선 IP(DHCP 변동 — mobile_env가 매번 탐지). PC→폰 ping은 되므로 헷갈리지 말 것(비대칭).
+2. **WSL 릴레이는 포트별 리슨 패밀리가 엇갈림** — 443=[::1]만, 9000(UG wss)=127.0.0.1만. phone-proxy가 두 루프백 순차 폴백으로 흡수. 새 포트가 안 뚫리면 이 패턴 의심.
+3. **폰 Chrome은 주소창 입력을 https로 자동 승격** — 도달성 확인은 `http://<유선IP>:8888/`을 http까지 직접 타이핑("RBI Phone Proxy OK" 페이지).
+4. 프록시 호스트 칸에 접속할 사이트 도메인을 넣는 실수 주의 — **중계하는 PC의 IP**를 넣는 것.
+
+**앱런치 모바일 브라우저 인식 (2026-08-27 조사·구현)**
+- "모바일 식별 값" = appLaunch `extension.feature`의 `userAgent`/`maxTouchPoints`/`platform` — LC는 원래부터 navigator 값을 그대로 전송(CMDSender.js). **단 UG JVM 스위치 `-Dscap.appbrowser.clienthints.override.enabled`가 전 배포 ug.env에서 false**라 기본 무시됨. 스위치를 켜면 원격 UA/navigator에 반영되지만 UG가 `Sec-Ch-Ua-Mobile: ?0`을 하드코딩 덮어써서(CefAppBrowser.java:3817) UA-CH 판정 사이트엔 역효과 — 완전 위장은 UG 수정 필요.
+- 클라이언트 단독(스위치 무관) 경로로 **`feature.headers`**(매 요청 헤더 주입, 기동 도메인 한정)를 구현: `clientConfig.json mobileConfig.mobileBrowserEmulation`('auto' 기본=터치 기기에서만 | 'on' 강제 | 'off')이 켜지면 User-Agent(모바일)+Sec-CH-UA-Mobile `?1`+Sec-CH-UA-Platform Android를 주입하고 feature 3종도 모바일 값으로 세팅(스위치 on 대비). IG launchExtension.feature가 내려오면 그쪽이 우선.
+- 참고: SCAP ClientType MOBILE_CLIENT(2)는 미러링 뷰어 채널로 이 건과 무관.
+
+**회전(가로/세로) 리사이즈 안정화 (2026-08-27)**
+- 가로→세로 검은 화면의 원인: 원격 창 확대가 300ms 풀캡처보다 늦어 **옛 크기 프레임이 새 캔버스에 그려지는 레이스**(OSC 캔버스는 다음 프레임 도착 시에만 리사이즈) + IME 가드의 높이 단독 판정 + 부모 loader의 orientation 미처리.
+- 조치(전부 coarse pointer 게이트, PC 무영향): resizeView IMG 분기 250ms 디바운스+1초 후 2차 풀캡처, IME 가드에 폭 조건 병기(회전=폭 변화 시 가드 해제), loader.js 회전 안정화 폴링(50ms×2회 동일 시 확정, 1.5s 상한).
+- CSS 일관성: [mobile] 블록 미디어쿼리를 `(max-width:719px), (max-height:480px) and (hover:none) and (pointer:coarse)`로 확장(가로 폰 포함)하고 태블릿 블록(min-width:720)은 De Morgan 콤마 전개로 가로 폰 제외 — 대상: liteclient-ui layout_center+팝업 CSS 3종, dashboard layout 2종.
 
 ## 9. 시나리오별 작업 가이드 (유지보수·기능수정·신규서비스)
 

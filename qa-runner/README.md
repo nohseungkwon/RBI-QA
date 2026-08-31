@@ -30,7 +30,7 @@ qa-runner/
 node tests/run-test.cjs              # 환경변수 D/U/P/T 로 도메인·아이디·비번·타겟 지정
 D=https://<RBI도메인> U=<아이디> P='<비밀번호>' T=http://<테스트타겟호스트>:<포트> node tests/run-test.cjs
 ```
-- 초기로딩·네비·컨텍스트메뉴·파일보관함·업로드·다운로드·Ctrl+F·인쇄미리보기·클립보드·세션·콘솔에러 = **11개 영역**
+- 초기로딩·네비·컨텍스트메뉴·**업로드→다운로드→파일보관함(상태확인)** 순·Ctrl+F·인쇄미리보기·클립보드·세션·콘솔에러 = **11개 영역** (파일 흐름: 업로드·다운로드 동작 확인 후 파일보관함 상태 검증 — 2026-08-24 순서 변경)
 - **12. CDR 무해화 시나리오**: `test-site/cdr-sample/1D8B742.doc` 를 **테스트 페이지 좌상단 고정 링크 클릭**으로 다운로드(좌표 185,210) → 파일보관함 → **검사완료(완료 버튼)** → 클릭 → **CDR 리포트 팝업(처리내역 총/무해화/제거)** 까지 자동 검증. (URL바 방식은 rbiFrame 재생성 문제로 폐기, 링크 클릭이 더 현실적)
 - **13. 사용자 메뉴(`.user-menu-list`)**: `#id-rbi-ui-moreicon` 펼침 → 새창열기·즐겨찾기·허용된정책확인·인쇄·파일보관함·캐시비우기·교육동영상·로그아웃 각 항목 **동작 전/후(before·after) 스크린샷** 캡처(PRD 5장 데이터 구조). ⚠️ `.user-menu-list`는 CSS 모듈 해시 클래스라 리터럴 셀렉터 불가 → `#id-rbi-ui-moreicon` + `li[order]`/`li[class*="bookmarks"|"pol-"]`/텍스트로 셀렉트.
 - **14. RBI UI 기능(`#id-rbi-ui`, PRD 3.7)**: 공유하기(`#id-rbi-ui-urlsharing-area`)·인증서안전아이콘·검색엔진선택·URL입력창·세션타이머·연결아이콘·DLP아이콘·파일보관함아이콘 표시/동작 검증.
@@ -83,3 +83,25 @@ node runner.js https://release.aircode.com dev01@aircode.com '비밀번호' http
 - 비밀번호는 로그인 자동화에만 쓰이며 디스크에 저장하지 않습니다(`report.json`엔 아이디만 기록).
 - 타겟URL이 화이트리스트에 없으면 02 단계에서 **차단 페이지**가 떠 "확인" 처리됩니다(정상적인 차단 동작 검증도 됨).
 - 공용 staging에서는 다운로드/세션 등 부수효과를 고려해 실행하세요.
+
+## 클립보드 4플래그 정책 검증 (2026-08-31)
+
+서버 4플래그(`copyAllowed`/`pasteAllowed`/`clientCopyAllowed`/`clientPasteAllowed`) 집행을 자동 검증하는 전용 스크립트 3종.
+자격증명은 항상 환경변수로 주입(D/U/P/T), 기본 타겟은 로컬 WSL 스택(`http://127.0.0.1:8900` = test-site).
+
+```
+# 1) 단일 케이스 — 현재 서버 정책대로: getAppPolicy 응답 캡처 + 반출(센티널)/반입(토스트)/PolicyBox 판독
+D=https://airrbi.aircode.com U=<id> P='<pw>' T=http://127.0.0.1:8900 CASE=라벨 node clipboard-policy-verify.cjs
+
+# 2) 16조합 전수 스윕 — 케이스마다 WSL DB CLIPBOARD_CONFIG 변경 + 격리 재실행 (~15분, 로컬 WSL 전용)
+#    START=n 으로 중단 지점부터 재개 가능. DB를 직접 바꾸므로 끝나면 원복 필요.
+U=<id> P='<pw>' node clipboard-policy-sweep.cjs
+
+# 3) 반입차단 출처판별 시나리오 — 격리출처는 조용히 붙고, PC출처는 무동작+토스트 (blur 이벤트로 PC복사 재현)
+U=<id> P='<pw>' node clipboard-policy-origin-test.cjs
+```
+
+- 판정 근거: 로컬 클립보드 센티널 대조(반출), UG로 나가는 `CLIPBOARD WRITE(eventType 4)` 콘솔 관측(반입), 차단 토스트 문구, PolicyBox 툴팁 li(허용 정책만 렌더됨).
+- LC UI DOM은 뷰어 탭의 iframe(`/liteclient/index.html`) 안에 있음 — frames() 순회로 접근.
+- rbi-tools MCP `run_qa`의 mode=`clipboard`/`clipboard-sweep`/`clipboard-origin`으로도 실행 가능.
+- 상세 설계·검증 기록: `rbi-liteclient\docs\2026-08-31_clipboard-policy-4flag-integration.md`
