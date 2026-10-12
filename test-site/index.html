@@ -15,7 +15,6 @@
   body{margin:0;font-family:'Malgun Gothic','Segoe UI',system-ui,sans-serif;background:var(--bg);color:var(--tx);line-height:1.55}
   mark{background:#ffe27a;color:#3a2c00;border-radius:3px;padding:0 1px}
 
-  /* 헤더 (AirRBI 브랜딩) */
   header{background:linear-gradient(100deg,#3a52e6,#6a5cf7 55%,#8b5cf6);color:#fff;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;box-shadow:var(--shadow)}
   .brand{display:flex;align-items:center;gap:12px}
   .shield{width:34px;height:38px;background:#fff;border-radius:8px 8px 18px 18px;display:flex;align-items:center;justify-content:center;font-size:18px;box-shadow:0 2px 8px rgba(0,0,0,.2)}
@@ -25,63 +24,53 @@
   .logo .tag{font-size:10.5px;color:#dfe6ff;letter-spacing:2px;margin-top:-2px}
   .hpill{font-size:11px;background:rgba(255,255,255,.18);padding:5px 12px;border-radius:99px;border:1px solid rgba(255,255,255,.25)}
 
-  /* QA 콘솔 (자동화 대상, 고정 레이아웃) */
-  .console{max-width:1180px;margin:18px auto;padding:0 18px}
-  .panel{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);overflow:hidden}
-  .panel .ph{padding:14px 20px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px}
-  .panel .ph h2{margin:0;font-size:15px}
-  .panel .ph .badge{font-size:11px;color:#fff;background:var(--blue);border-radius:6px;padding:2px 8px}
-  .qgrid{display:grid;grid-template-columns:repeat(2,1fr);gap:0}
-  @media(max-width:860px){.qgrid{grid-template-columns:1fr}}
-  .qcell{padding:18px 20px;border-bottom:1px solid var(--line)}
-  .qcell:nth-child(odd){border-right:1px solid var(--line)}
-  .qcell h3{margin:0 0 4px;font-size:14px;display:flex;align-items:center;gap:7px}
-  .qcell h3 .n{width:20px;height:20px;border-radius:50%;background:var(--blue);color:#fff;font-size:11px;display:inline-flex;align-items:center;justify-content:center}
-  .qcell .desc{font-size:12px;color:var(--mut);margin:0 0 10px}
-  .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
-  input,textarea{background:#fbfcff;border:1.5px solid var(--line);color:var(--tx);border-radius:9px;padding:9px 11px;font-size:13px;font-family:inherit}
-  input:focus,textarea:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(79,108,247,.15)}
+  input,textarea,select{background:#fbfcff;border:1.5px solid var(--line);color:var(--tx);border-radius:9px;padding:9px 11px;font-size:13px;font-family:inherit}
+  input:focus,textarea:focus,select:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(79,108,247,.15)}
   input.full{width:100%}
   textarea{width:100%;min-height:48px;resize:vertical}
   button{background:var(--blue);color:#fff;border:0;border-radius:9px;padding:9px 15px;font-size:13px;font-weight:700;cursor:pointer;transition:.15s}
   button:hover{background:#3f5bf0}
   button.sec{background:#eef1fb;color:var(--blue)}
   button.warn{background:#fff3e0;color:var(--warn)}
+  button.bad{background:#fdecec;color:var(--bad)}
   button.dark{background:#26314f}
   .res{margin-top:10px;font-size:12.5px;background:#f6f8fe;border:1px dashed var(--line);border-radius:9px;padding:9px 11px;min-height:20px;color:var(--mut);white-space:pre-wrap;word-break:break-all}
   .res.ok{background:var(--okbg);border-color:#bfe6cd;color:#13703a}
   .res.bad{background:var(--badbg);border-color:#f4c6c6;color:#a11b1b}
   .kbd{font-family:Consolas,monospace;background:#eef1fb;border:1px solid var(--line);border-radius:5px;padding:1px 6px;font-size:11px;color:var(--blue)}
 
-  /* 미디어/검색 본문 */
   .wrap{max-width:1180px;margin:18px auto;padding:0 18px}
   .card{background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);padding:18px 20px;margin-bottom:18px}
   .card h2{margin:0 0 4px;font-size:15px;display:flex;align-items:center;gap:8px}
   .card .desc{font-size:12px;color:var(--mut);margin:0 0 12px}
   .card.cat{border-left:4px solid var(--blue)}
+  .badge{font-size:11px;color:#fff;background:var(--blue);border-radius:6px;padding:2px 8px}
   .cattag{font-size:11px;color:var(--mut);font-weight:600;margin-left:auto;background:#f0f3fc;padding:3px 10px;border-radius:99px}
-  .subblock{background:#fbfcff;border:1px solid var(--line);border-radius:12px;padding:14px}
+  .subblock{background:#fbfcff;border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:14px}
+  .subblock:last-child{margin-bottom:0}
   .subblock h3{margin:0 0 4px;font-size:13.5px}
+  .desc{font-size:12px;color:var(--mut);margin:0 0 10px}
+  .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
   .grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
   @media(max-width:820px){.grid2{grid-template-columns:1fr}}
   video{width:100%;max-height:300px;background:#000;border-radius:10px}
   #findBody{font-size:13px;line-height:1.9;background:#fbfcff;border:1px solid var(--line);border-radius:10px;padding:14px;max-height:200px;overflow:auto}
+  .editz{min-height:46px;background:#fff;border:1.5px solid var(--line);border-radius:9px;padding:9px 11px;font-size:13px}
+  .editz:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 3px rgba(79,108,247,.15)}
+  .scrollz{height:150px;overflow:auto;background:#fff;border:1px solid var(--line);border-radius:9px;padding:10px 12px;font-size:12.5px}
+  .scrollz .tall{height:900px;background:linear-gradient(#fbfcff,#eef1fb)}
+  .qaimg{max-width:340px;width:100%;border-radius:10px;border:1px solid var(--line);display:block}
 
-  /* 결과 로그(고정) */
   #log{position:fixed;right:16px;bottom:16px;width:330px;max-height:42vh;overflow:auto;background:#fff;border:1px solid var(--line);border-radius:14px;box-shadow:0 10px 36px rgba(38,54,110,.18);z-index:60}
   #log h3{margin:0;padding:10px 14px;font-size:12.5px;position:sticky;top:0;background:#fff;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
   #logBody{padding:8px 14px;font-family:Consolas,monospace;font-size:11px;color:#33415c}
   #logBody .t{color:#9aa6c2}
   .statusbar{max-width:1180px;margin:0 auto 18px;padding:0 18px}
-  .statusbar .sb{background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 16px;font-size:12.5px;color:var(--mut);box-shadow:var(--shadow);display:flex;gap:18px;flex-wrap:wrap}
+  .statusbar .sb{background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 16px;font-size:12.5px;color:var(--mut);box-shadow:var(--shadow);display:flex;gap:16px;flex-wrap:wrap}
   .statusbar .sb b{color:var(--tx)}
 </style>
 </head>
 <body>
-<!-- 고정 CDR 다운로드 버튼(자동화 좌표 클릭 대상) -->
-<a id="lnkCdrSample" href="./cdr-sample/1D8B742.doc" download="1D8B742.doc"
-   onclick="setRes('dlRes','CDR 샘플(.doc) 다운로드 → 우상단 파일보관함에서 CDR 검사 확인','ok')"
-   style="position:fixed;top:130px;left:80px;z-index:900;display:inline-block;background:#16a34a;color:#fff;border-radius:12px;padding:14px 22px;font-size:14px;font-weight:800;text-decoration:none;box-shadow:0 6px 22px rgba(22,163,74,.4)">📎 CDR 샘플(.doc) 다운로드</a>
 <header>
   <div class="brand">
     <div class="shield">🛡️</div>
@@ -93,21 +82,17 @@
   <div class="hpill" id="envPill">env loading…</div>
 </header>
 
-<!-- 환경 상태바 -->
-<div class="statusbar">
-  <div class="sb" id="envBar">환경 정보 로딩 중…</div>
-</div>
+<div class="statusbar"><div class="sb" id="envBar">환경 정보 로딩 중…</div></div>
 
-<!-- ▣ 카테고리별 QA 콘솔 (자동화 대상) -->
 <div class="wrap">
 
-  <!-- 📋 카테고리 A: 텍스트 / 클립보드 -->
+  <!-- 📋 A: 텍스트 / 클립보드 -->
   <div class="card cat" id="cat-text">
-    <h2><span class="badge">A</span> 📋 텍스트 / 클립보드 <span class="cattag">복사 · 잘라내기 · 검색</span></h2>
+    <h2><span class="badge">A</span> 📋 텍스트 / 클립보드 <span class="cattag">복사 · 잘라내기 · 검색 · 정책</span></h2>
     <div class="grid2">
       <div class="subblock">
         <h3>① 클립보드 복사 → 붙여넣기</h3>
-        <p class="desc">원본 선택 → <span class="kbd">Ctrl+C</span> → 대상칸 <span class="kbd">Ctrl+V</span></p>
+        <p class="desc">원본 클릭(복사) → 대상칸 <span class="kbd">Ctrl+V</span></p>
         <input id="copySrc" class="full" tabindex="1" readonly onclick="doCopy()" title="클릭하면 복사" style="cursor:pointer" value="RBI-CLIP-COPY-2026 가나다 ABC 12345">
         <div class="row" style="margin-top:8px">
           <button id="btnCopy" tabindex="-1" onclick="doCopy()">복사</button>
@@ -117,7 +102,7 @@
       </div>
       <div class="subblock">
         <h3>② 잘라내기(Cut) → 붙여넣기</h3>
-        <p class="desc">원본 선택 → <span class="kbd">Ctrl+X</span> → 대상칸 <span class="kbd">Ctrl+V</span></p>
+        <p class="desc">원본 클릭(잘라내기) → 대상칸 <span class="kbd">Ctrl+V</span></p>
         <input id="cutSrc" class="full" tabindex="3" onclick="doCut()" title="클릭하면 잘라내기" style="cursor:pointer" value="RBI-CUT-2026 잘라낼 문장입니다">
         <div class="row" style="margin-top:8px">
           <button id="btnCut" tabindex="-1" class="warn" onclick="doCut()">잘라내기</button>
@@ -126,34 +111,172 @@
         <div class="res" id="cutRes">대기</div>
       </div>
     </div>
+
     <div class="subblock" style="margin-top:14px">
       <h3>③ 문자열 검색 — 검색창 입력 또는 <span class="kbd">Ctrl+F</span></h3>
-      <p class="desc">검색창에 입력하면 아래 본문이 하이라이트됩니다. <span class="kbd">Ctrl+F</span>로 RBI 격리 브라우저 찾기도 동작하는지 확인.</p>
+      <p class="desc">검색창에 입력하면 아래 본문이 하이라이트됩니다. <span class="kbd">Ctrl+F</span> 찾기도 확인.</p>
       <div class="row">
         <input id="findInput" tabindex="5" placeholder="예: RBI 또는 격리" style="flex:1;min-width:180px" oninput="doFind()">
         <button id="btnFind" tabindex="-1" onclick="doFind()">🔍 검색</button>
         <button class="sec" tabindex="-1" onclick="clearFind()">지우기</button>
       </div>
       <div class="res" id="findRes">대기</div>
-      <div class="muted" style="margin-top:10px;font-weight:700">📄 검색 본문 (검색/Ctrl+F 대상)</div>
+      <div style="margin-top:10px;font-weight:700;font-size:12px">📄 검색 본문 (검색/Ctrl+F 대상)</div>
       <div id="findBody">RBI(Remote Browser Isolation, 원격 브라우저 격리)는 위험한 웹사이트를 사용자 PC가 아닌 서버 측 격리 브라우저로 열어 악성코드와 정보 유출을 차단합니다. AirRBI는 IG 게이트웨이가 인증·정책을 적용하고, 격리 브라우저(UG)가 실제 사이트를 렌더링하며, LiteClient가 픽셀 스트리밍으로 화면을 받습니다. 클립보드·다운로드·인쇄·워터마크 같은 DLP 정책으로 데이터 반출을 통제하고, 파일은 CDR 무해화를 거칩니다. 이 문장에서 "RBI", "격리", "정책", "AirRBI" 등을 검색해 하이라이트 동작을 확인하세요.</div>
     </div>
-  </div>
 
-  <!-- 📁 카테고리 B: 파일 (다운로드 · CDR) -->
-  <div class="card cat" id="cat-file">
-    <h2><span class="badge">B</span> 📁 파일 <span class="cattag">다운로드 · CDR 무해화</span></h2>
-    <p class="desc">다운로드 → RBI가 가로채 <b>파일보관함</b>으로 라우팅·CDR 검사(검사중→완료). CDR 샘플(.doc)은 화면 좌상단 고정 버튼.</p>
-    <div class="row">
-      <button id="btnDownTxt" tabindex="6" class="dark" onclick="dl('rbi-qa-test.txt','RBI QA 다운로드 테스트 '+new Date(),'text/plain')">📄 텍스트(.txt)</button>
-      <button id="btnDownExe" tabindex="-1" class="warn" onclick="dl('rbi-qa.exe','무해한 더미(이름만 exe) — CDR 트리거','application/octet-stream')">⚠️ 실행형명(.exe)</button>
+    <div class="grid2" style="margin-top:14px">
+      <div class="subblock" style="margin:0">
+        <h3>④ 서식(text/html) · 특수문자 복사</h3>
+        <p class="desc">서식/따옴표·개행·<span class="kbd">data-pm-slice</span> 페이로드를 복사 → 대상칸에 <span class="kbd">Ctrl+V</span>. (ug 3.3.x 클립보드 audit 파싱 회귀 검증)</p>
+        <div id="richSrc" class="editz" contenteditable="true">RBI <b>서식</b> <i>복사</i> 테스트 — 따옴표"·개행↵·특수 <span data-pm-slice="1 1 []">&lt;pm-slice&gt;</span></div>
+        <div class="row" style="margin-top:8px">
+          <button id="btnCopyHtml" onclick="doCopyRich()">서식 복사</button>
+          <button class="sec" onclick="doCopySpecial()">특수문자 복사</button>
+          <div id="pasteRich" class="editz" contenteditable="true" style="flex:1;min-width:160px" data-ph="여기에 Ctrl+V"></div>
+        </div>
+        <div class="res" id="richRes">대기</div>
+      </div>
+      <div class="subblock" style="margin:0">
+        <h3>⑤ 이미지 클립보드 복사</h3>
+        <p class="desc">이미지를 클립보드에 복사 → 대상칸 <span class="kbd">Ctrl+V</span>. ("텍스트만/텍스트→이미지" 정책 판별). 클립보드 이미지쓰기는 보안컨텍스트(HTTPS) 필요.</p>
+        <div class="row">
+          <canvas id="clipCanvas" width="120" height="70" style="border:1px solid var(--line);border-radius:8px;background:#fff"></canvas>
+          <div>
+            <button id="btnCopyImg" onclick="doCopyImage()">🖼 이미지 복사</button>
+            <div style="margin-top:6px"><div id="pasteImg" class="editz" contenteditable="true" style="min-width:150px" data-ph="여기에 Ctrl+V(이미지)"></div></div>
+          </div>
+        </div>
+        <div class="res" id="imgClipRes">대기</div>
+      </div>
     </div>
-    <div class="res" id="dlRes">대기</div>
   </div>
 
-  <!-- 🎬 카테고리 C: 미디어 (비디오) -->
+  <!-- 📁 B: 파일 (다운로드 · 업로드 · 검사 · CDR) -->
+  <div class="card cat" id="cat-file">
+    <h2><span class="badge">B</span> 📁 파일 <span class="cattag">다운로드 · 업로드 · 바이러스/무해화</span></h2>
+
+    <div class="subblock">
+      <h3>① 기본 다운로드 (파일보관함 라우팅 · CDR)</h3>
+      <p class="desc">다운로드 → RBI가 가로채 <b>파일보관함</b>으로 라우팅·CDR 검사(검사중→완료).</p>
+      <div class="row">
+        <button id="btnDownTxt" tabindex="6" class="dark" onclick="dl('rbi-qa-test.txt','RBI QA 다운로드 테스트 '+new Date(),'text/plain')">📄 텍스트(.txt)</button>
+        <button id="btnDownExe" tabindex="-1" class="warn" onclick="dl('rbi-qa.exe','무해한 더미(이름만 exe) — CDR 트리거','application/octet-stream')">⚠️ 실행형명(.exe)</button>
+        <a id="lnkCdrSample" href="./cdr-sample/1D8B742.doc" download="1D8B742.doc"
+           onclick="setRes('dlRes','CDR 샘플(.doc) 다운로드 → 우상단 파일보관함에서 CDR 검사 확인','ok')"
+           style="text-decoration:none"><button type="button" style="background:#16a34a">📎 CDR 샘플(.doc)</button></a>
+      </div>
+      <div class="res" id="dlRes">대기</div>
+    </div>
+
+    <div class="grid2">
+      <div class="subblock" style="margin:0">
+        <h3>② 검사 대상 파일 (바이러스 / 무해화 / FAILED)</h3>
+        <p class="desc">파일보관함의 <b>바이러스·무해화 검사 컬럼(scanTypes)</b> 노출과 상태(검출/BLOCKED/FAILED)를 유발.</p>
+        <div class="row">
+          <button class="bad" onclick="dlEicar()">🦠 EICAR(바이러스 검출)</button>
+          <button class="sec" onclick="dlBin('rbi-cdr-test.pdf','application/pdf','%PDF-1.4 RBI CDR TEST http://go.microsoft.com/fwlink/ hyperlink')">📕 PDF(무해화)</button>
+          <button class="sec" onclick="dlBin('rbi-corrupt.docx','application/vnd.openxmlformats-officedocument.wordprocessingml.document','NOT_A_REAL_DOCX_손상파일')">📘 손상 docx(FAILED)</button>
+          <button class="sec" onclick="dlBin('rbi-corrupt.xlsx','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet','NOT_A_REAL_XLSX_손상파일')">📗 손상 xlsx(FAILED)</button>
+        </div>
+        <div class="res" id="scanRes">대기</div>
+      </div>
+      <div class="subblock" style="margin:0">
+        <h3>③ 파일 업로드 (OPEN 다이얼로그 브리지)</h3>
+        <p class="desc">격리에서 <b>내 PC 파일 선택(OPEN 다이얼로그)</b>이 클라이언트로 브리지되는지. 대용량 생성 버튼으로 업로드 취소/중복 시나리오도.</p>
+        <div class="row">
+          <input type="file" id="upFile" onchange="onUp()" multiple>
+        </div>
+        <div class="row" style="margin-top:8px">
+          <span class="desc" style="margin:0">대용량 생성:</span>
+          <button class="sec" onclick="genBig(10)">10MB</button>
+          <button class="sec" onclick="genBig(100)">100MB</button>
+          <span class="desc" style="margin:0">→ 받아서 파일보관함에 업로드</span>
+        </div>
+        <div class="res" id="upRes">대기</div>
+      </div>
+    </div>
+
+    <div class="subblock">
+      <h3>④ 다운로드 방식 다변화 (다운로드 미발생 이슈 재현)</h3>
+      <p class="desc"><span class="kbd">showSaveFilePicker</span>는 UG가 SAVE 다이얼로그 자동취소 → AbortError로 다운로드 미발생 재현. 나머지 방식과 결과 비교.</p>
+      <div class="row">
+        <button onclick="dlPicker()">showSaveFilePicker</button>
+        <button class="sec" onclick="dlBlobAnchor()">blob 앵커</button>
+        <button class="sec" onclick="dlFetch()">fetch→blob</button>
+        <button class="sec" onclick="dlWinOpen()">window.open</button>
+        <button class="sec" onclick="dlIframe()">iframe</button>
+        <button class="sec" onclick="dlDataUri()">data:URI</button>
+      </div>
+      <div class="res" id="dl2Res">대기</div>
+    </div>
+  </div>
+
+  <!-- 🗔 C: 팝업 / 새 탭 -->
+  <div class="card cat" id="cat-popup">
+    <h2><span class="badge">C</span> 🗔 팝업 / 새 탭 <span class="cattag">새 창 격리 · 캐시비우기</span></h2>
+    <p class="desc">새 탭/팝업으로 격리 세션이 뜨는지, 이후 사용자메뉴(캐시비우기 등) 동작(팝업탭 무한로딩 이슈 재현 경로).</p>
+    <div class="row">
+      <a href="https://www.naver.com/" target="_blank" rel="noopener"><button class="sec" type="button">target=_blank 링크(naver)</button></a>
+      <button onclick="openPopup(location.href)">window.open(자기 자신)</button>
+      <button class="sec" onclick="openPopup('https://www.naver.com/')">window.open(naver)</button>
+      <button class="sec" onclick="openPopup('about:blank')">빈 팝업</button>
+    </div>
+    <div class="res" id="popRes">대기</div>
+  </div>
+
+  <!-- 🖼 D: 이미지 (컨텍스트 메뉴) -->
+  <div class="card cat" id="cat-image">
+    <h2><span class="badge">D</span> 🖼 이미지 <span class="cattag">우클릭 저장 · 복사 · 새 탭</span></h2>
+    <p class="desc">이미지 위 <b>우클릭</b> → 이미지 저장/이미지 복사/새 탭에서 이미지 열기 컨텍스트메뉴 검증. (QA 9-4 이미지저장 warn 해소용)</p>
+    <img id="qaImage" class="qaimg" alt="RBI QA 이미지" src="data:image/svg+xml;utf8,&lt;svg xmlns='http://www.w3.org/2000/svg' width='340' height='180'&gt;&lt;rect width='340' height='180' fill='%234f6cf7'/&gt;&lt;text x='170' y='95' font-size='26' fill='white' text-anchor='middle' font-family='sans-serif'&gt;AirRBI QA IMAGE&lt;/text&gt;&lt;/svg&gt;">
+    <div class="res" id="imgRes" style="margin-top:12px">이미지 위에서 우클릭해 컨텍스트메뉴 항목을 확인하세요.</div>
+  </div>
+
+  <!-- ⌨ E: 입력 / 인쇄 / 스크롤 / 선택 / 오디오 -->
+  <div class="card cat" id="cat-input">
+    <h2><span class="badge">E</span> ⌨ 입력 · 인쇄 · 스크롤 <span class="cattag">IME · print · 휠 · 선택 · 오디오</span></h2>
+    <div class="grid2">
+      <div class="subblock" style="margin:0">
+        <h3>① 한글 IME 조합 입력</h3>
+        <p class="desc">한글 입력 시 <span class="kbd">compositionstart/update/end</span> 이벤트와 최종 확정 문자열 확인.</p>
+        <input id="imeInput" class="full" placeholder="한글을 입력하세요 (예: 안녕하세요)">
+        <div class="res" id="imeRes">대기</div>
+      </div>
+      <div class="subblock" style="margin:0">
+        <h3>② 텍스트 선택 범위</h3>
+        <p class="desc">아래 문장을 드래그/<span class="kbd">Shift+←→</span>/<span class="kbd">Cmd+Shift+←→</span> 로 선택 → 선택 길이 표시.</p>
+        <div id="selText" style="user-select:text;font-size:13px;background:#fff;border:1px solid var(--line);border-radius:9px;padding:9px 11px">RBI 격리 브라우저에서 텍스트 선택 범위가 정확히 반영되는지 확인하는 문장입니다. 여기를 드래그해 보세요.</div>
+        <div class="res" id="selRes">대기</div>
+      </div>
+    </div>
+    <div class="grid2" style="margin-top:14px">
+      <div class="subblock" style="margin:0">
+        <h3>③ 인쇄 (<span class="kbd">Ctrl+P</span> / window.print)</h3>
+        <p class="desc">인쇄 미리보기가 뜨는지. (PDF 뷰어류 사이트 인쇄 QA)</p>
+        <button onclick="window.print()">🖨 인쇄</button>
+        <div class="res" id="printRes">버튼 또는 Ctrl+P</div>
+      </div>
+      <div class="subblock" style="margin:0">
+        <h3>④ 스크롤 / 휠 (배율 환경)</h3>
+        <p class="desc">스크롤 위치(px)·<span class="kbd">wheel deltaY/deltaMode</span> 표시. (휠 배율 정규화 실측)</p>
+        <div class="scrollz" id="scrollz" onscroll="onScroll()"><div class="tall">스크롤 영역 — 아래로 스크롤하세요.</div></div>
+        <div class="res" id="scrollRes">대기</div>
+      </div>
+    </div>
+    <div class="subblock" style="margin-top:14px">
+      <h3>⑤ 오디오 재생 (단독)</h3>
+      <p class="desc">오디오 단독 재생 시 소리/상태 갱신 (오디오 drain 검증). 비디오는 카테고리 F.</p>
+      <div class="row">
+        <button id="btnBeep" onclick="playBeep()">🔊 비프음 재생(2초)</button>
+        <span class="res" id="audioRes" style="flex:1;margin-top:0">대기</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- 🎬 F: 미디어 (비디오) — QA 러너 IC-5가 '페이지 하단 비디오' 좌표를 쓰므로 물리적 위치는 맨 아래 유지 -->
   <div class="card cat" id="cat-media">
-    <h2><span class="badge">C</span> 🎬 미디어 <span class="cattag">비디오 재생</span></h2>
+    <h2><span class="badge">F</span> 🎬 미디어 <span class="cattag">비디오 재생</span></h2>
     <p class="desc">로컬 <span class="kbd">./sample.mp4</span>. 재생 시 상태에 <b>재생중 + 경과시간</b> 갱신 확인.</p>
     <div class="row" style="margin-bottom:10px">
       <button id="btnPlay" tabindex="7" onclick="playVid()">▶ 재생</button>
@@ -173,7 +296,7 @@
 function log(m){const b=document.getElementById('logBody');const d=new Date();
   const t=d.toLocaleTimeString('ko-KR',{hour12:false})+'.'+String(d.getMilliseconds()).padStart(3,'0');
   b.insertAdjacentHTML('afterbegin','<div><span class="t">'+t+'</span> '+m+'</div>');}
-function setRes(id,msg,cls){const e=document.getElementById(id);e.textContent=msg;e.className='res'+(cls?' '+cls:'');}
+function setRes(id,msg,cls){const e=document.getElementById(id);if(!e)return;e.textContent=msg;e.className='res'+(cls?' '+cls:'');}
 
 /* 환경 표시 */
 (function(){
@@ -183,60 +306,120 @@ function setRes(id,msg,cls){const e=document.getElementById(id);e.textContent=ms
     '<span><b>URL</b> '+location.host+'</span>'+
     '<span><b>UA</b> '+(ua.match(/(Chrome|Firefox|Safari)\/[\d.]+/)||['?'])[0]+'</span>'+
     '<span><b>해상도</b> '+screen.width+'×'+screen.height+'</span>'+
-    '<span><b>OffscreenCanvas</b> '+(typeof OffscreenCanvas!=='undefined')+'</span>'+
-    '<span><b>WebRTC</b> '+(typeof RTCPeerConnection!=='undefined')+'</span>'+
     '<span><b>보안컨텍스트</b> '+window.isSecureContext+'</span>'+
-    '<span><b>clipboardAPI</b> '+(!!navigator.clipboard)+'</span>';
-  log('테스트 타겟 로드됨 · '+location.host);
+    '<span><b>clipboardAPI</b> '+(!!navigator.clipboard)+'</span>'+
+    '<span><b>savePicker</b> '+(typeof window.showSaveFilePicker!=='undefined')+'</span>'+
+    '<span><b>OffscreenCanvas</b> '+(typeof OffscreenCanvas!=='undefined')+'</span>';
+  log('테스트 타겟 로드됨 · '+location.host+' · secure='+window.isSecureContext);
 })();
 
-/* 1. 클립보드 복사 */
-function doCopy(){
-  const s=document.getElementById('copySrc');s.focus();s.select();
-  try{const ok=document.execCommand('copy');
-    setRes('clipRes', ok?'복사 성공(execCommand) — 대상칸에 Ctrl+V 하세요':'복사 실패(정책 차단?)', ok?'ok':'bad');
-    log('복사 execCommand='+ok);}
-  catch(e){setRes('clipRes','복사 예외: '+e,'bad');}
-}
-document.getElementById('pasteDst').addEventListener('input',e=>{
-  if(e.target.value){setRes('clipRes','✅ 붙여넣기 감지 '+e.target.value.length+'자: '+e.target.value.slice(0,50),'ok');log('붙여넣기 '+e.target.value.length+'자');}});
-document.getElementById('pasteDst').addEventListener('paste',e=>{
-  const d=(e.clipboardData||window.clipboardData).getData('text');setRes('clipRes','✅ paste 이벤트 '+d.length+'자: '+d.slice(0,50),'ok');});
+/* A-①/② 클립보드 복사/잘라내기 */
+function doCopy(){const s=document.getElementById('copySrc');s.focus();s.select();
+  try{const ok=document.execCommand('copy');setRes('clipRes',ok?'복사 성공(execCommand) — 대상칸에 Ctrl+V':'복사 실패(정책 차단?)',ok?'ok':'bad');log('복사 execCommand='+ok);}
+  catch(e){setRes('clipRes','복사 예외: '+e,'bad');}}
+document.getElementById('pasteDst').addEventListener('input',e=>{if(e.target.value){setRes('clipRes','✅ 붙여넣기 감지 '+e.target.value.length+'자: '+e.target.value.slice(0,50),'ok');log('붙여넣기 '+e.target.value.length+'자');}});
+document.getElementById('pasteDst').addEventListener('paste',e=>{const d=(e.clipboardData||window.clipboardData).getData('text');setRes('clipRes','✅ paste 이벤트 '+d.length+'자: '+d.slice(0,50),'ok');});
+function doCut(){const s=document.getElementById('cutSrc');s.focus();s.select();
+  try{const ok=document.execCommand('cut');setRes('cutRes',ok?'잘라내기 성공 — 원본 비었는지 확인 후 Ctrl+V':'잘라내기 실패(정책 차단?)',ok?'ok':'bad');log('잘라내기 execCommand='+ok+' / 원본='+s.value.length+'자');}
+  catch(e){setRes('cutRes','잘라내기 예외: '+e,'bad');}}
+document.getElementById('cutDst').addEventListener('input',e=>{if(e.target.value){setRes('cutRes','✅ 붙여넣기 '+e.target.value.length+'자: '+e.target.value.slice(0,50),'ok');log('cut 붙여넣기');}});
 
-/* 2. 잘라내기 */
-function doCut(){
-  const s=document.getElementById('cutSrc');s.focus();s.select();
-  try{const ok=document.execCommand('cut');
-    setRes('cutRes', ok?'잘라내기 성공 — 원본 비었는지 확인 후 대상칸에 Ctrl+V':'잘라내기 실패(정책 차단?)', ok?'ok':'bad');
-    log('잘라내기 execCommand='+ok+' / 원본='+s.value.length+'자');}
-  catch(e){setRes('cutRes','잘라내기 예외: '+e,'bad');}
-}
-document.getElementById('cutDst').addEventListener('input',e=>{
-  if(e.target.value){setRes('cutRes','✅ 붙여넣기 '+e.target.value.length+'자: '+e.target.value.slice(0,50),'ok');log('cut 붙여넣기 '+e.target.value.length+'자');}});
-
-/* 3. 문자열 검색 */
-function doFind(){
-  const q=document.getElementById('findInput').value.trim();
-  const body=document.getElementById('findBody');
+/* A-③ 검색 */
+function doFind(){const q=document.getElementById('findInput').value.trim();const body=document.getElementById('findBody');
   const raw=body.dataset.raw||(body.dataset.raw=body.textContent);
   if(!q){body.innerHTML=raw;setRes('findRes','검색어 없음');return;}
   const re=new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'gi');let c=0;
   body.innerHTML=raw.replace(re,m=>{c++;return '<mark>'+m+'</mark>';});
-  setRes('findRes', c>0?('✅ "'+q+'" '+c+'건 하이라이트'):('"'+q+'" 0건'), c>0?'ok':'bad');
-  log('검색 "'+q+'" → '+c+'건');
-}
+  setRes('findRes',c>0?('✅ "'+q+'" '+c+'건 하이라이트'):('"'+q+'" 0건'),c>0?'ok':'bad');log('검색 "'+q+'" → '+c+'건');}
 function clearFind(){document.getElementById('findInput').value='';doFind();}
 
-/* 4. 다운로드 */
-function dl(name,content,type){
-  try{const b=new Blob([content],{type});const u=URL.createObjectURL(b);
-    const a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();
-    setTimeout(()=>{URL.revokeObjectURL(u);a.remove();},1500);
-    setRes('dlRes','다운로드 시도: '+name+' — 우상단 파일보관함 기록 확인','ok');log('다운로드: '+name);}
-  catch(e){setRes('dlRes','다운로드 실패(차단?): '+e,'bad');}
-}
+/* A-④ 서식/특수문자 복사 */
+function selectNode(el){const r=document.createRange();r.selectNodeContents(el);const s=getSelection();s.removeAllRanges();s.addRange(r);}
+function doCopyRich(){const el=document.getElementById('richSrc');selectNode(el);
+  try{const ok=document.execCommand('copy');setRes('richRes',ok?'서식(text/html) 복사 성공 — 대상칸에 Ctrl+V':'서식 복사 실패','ok');log('서식복사='+ok);}
+  catch(e){setRes('richRes','서식 복사 예외: '+e,'bad');}}
+function doCopySpecial(){const payload='RBI"특수"\n개행\t탭 <span data-pm-slice="1 1 []">slice</span> {\"json\":\"like\"}';
+  const ta=document.createElement('textarea');ta.value=payload;ta.style.position='fixed';ta.style.opacity=0;document.body.appendChild(ta);ta.select();
+  try{const ok=document.execCommand('copy');setRes('richRes',ok?'특수문자 복사 성공 ('+payload.length+'자) — Ctrl+V로 왕복 확인':'특수문자 복사 실패','ok');log('특수문자복사='+ok);}catch(e){setRes('richRes','예외:'+e,'bad');}
+  ta.remove();}
+document.getElementById('pasteRich').addEventListener('paste',e=>{const cd=e.clipboardData;setRes('richRes','✅ paste types=['+Array.from(cd.types).join(', ')+'] · html='+(cd.getData('text/html')?'있음':'없음'),'ok');log('rich paste types='+Array.from(cd.types).join(','));});
 
-/* 5. 비디오 */
+/* A-⑤ 이미지 클립보드 복사 */
+(function(){const c=document.getElementById('clipCanvas');const x=c.getContext('2d');
+  x.fillStyle='#4f6cf7';x.fillRect(0,0,120,70);x.fillStyle='#fff';x.font='bold 15px sans-serif';x.fillText('RBI IMG',22,40);})();
+async function doCopyImage(){const c=document.getElementById('clipCanvas');
+  if(navigator.clipboard&&window.ClipboardItem){try{const blob=await new Promise(r=>c.toBlob(r,'image/png'));
+    await navigator.clipboard.write([new ClipboardItem({'image/png':blob})]);
+    setRes('imgClipRes','✅ 이미지 클립보드 복사(navigator.clipboard) — 대상칸에 Ctrl+V','ok');log('이미지복사 clipboardAPI');return;}
+    catch(e){setRes('imgClipRes','clipboard.write 실패: '+e.name+' (정책/권한?)','bad');log('이미지복사 실패 '+e.name);return;}}
+  setRes('imgClipRes','clipboard API 없음(비보안 컨텍스트) — HTTPS에서 재시도','bad');}
+document.getElementById('pasteImg').addEventListener('paste',e=>{const items=e.clipboardData.items;let img=false;
+  for(const it of items){if(it.type.indexOf('image')===0)img=true;}
+  setRes('imgClipRes',img?'✅ 이미지 붙여넣기 감지(image/*)':'붙여넣기됨(이미지 아님, types='+Array.from(e.clipboardData.types).join(',')+')',img?'ok':'bad');log('imgPaste image='+img);});
+
+/* B-① 기본 다운로드 */
+function dl(name,content,type){try{const b=new Blob([content],{type});const u=URL.createObjectURL(b);
+  const a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();
+  setTimeout(()=>{URL.revokeObjectURL(u);a.remove();},1500);
+  setRes('dlRes','다운로드 시도: '+name+' — 우상단 파일보관함 확인','ok');log('다운로드: '+name);}
+  catch(e){setRes('dlRes','다운로드 실패(차단?): '+e,'bad');}}
+
+/* B-② 검사 대상 파일 */
+function dlBin(name,type,content){try{const b=new Blob([content],{type});const u=URL.createObjectURL(b);
+  const a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(u);a.remove();},1500);
+  setRes('scanRes','다운로드: '+name+' — 파일보관함 검사 컬럼/상태 확인','ok');log('검사파일 '+name);}catch(e){setRes('scanRes','실패: '+e,'bad');}}
+function dlEicar(){const eicar='X5O!P%@AP[4\\PZX54(P^)7CC)7}$EICAR-STANDARD-ANTIVIRUS-TEST-FILE!$H+H*';
+  dlBin('rbi-eicar.com','application/octet-stream',eicar);setRes('scanRes','🦠 EICAR 다운로드 — 바이러스 검출·BLOCKED·차단 후 삭제버튼 확인','ok');}
+
+/* B-③ 업로드 */
+function onUp(){const f=document.getElementById('upFile').files;if(!f.length){setRes('upRes','선택 없음');return;}
+  let s='선택 '+f.length+'개: ';for(const x of f)s+=x.name+'('+(x.size/1024/1024).toFixed(2)+'MB) ';
+  setRes('upRes','✅ OPEN 다이얼로그 브리지 OK — '+s,'ok');log('파일선택 '+f.length+'개');}
+function genBig(mb){try{const buf=new Uint8Array(mb*1024*1024);const b=new Blob([buf],{type:'application/octet-stream'});
+  const u=URL.createObjectURL(b);const a=document.createElement('a');a.href=u;a.download='rbi-big-'+mb+'MB.bin';a.click();setTimeout(()=>URL.revokeObjectURL(u),3000);
+  setRes('upRes',mb+'MB 파일 생성/다운로드 — 받아서 파일보관함에 업로드(취소/중복 시나리오)','ok');log('대용량생성 '+mb+'MB');}catch(e){setRes('upRes','생성 실패: '+e,'bad');}}
+
+/* B-④ 다운로드 방식 다변화 */
+async function dlPicker(){if(!window.showSaveFilePicker){setRes('dl2Res','showSaveFilePicker 미지원(비보안 컨텍스트) — 이 방식은 HTTPS에서만','bad');return;}
+  try{const h=await window.showSaveFilePicker({suggestedName:'rbi-picker.txt'});const w=await h.createWritable();await w.write('RBI picker '+new Date());await w.close();
+    setRes('dl2Res','✅ showSaveFilePicker 저장 완료','ok');log('picker 저장 성공');}
+  catch(e){setRes('dl2Res','⚠ picker '+e.name+' — UG는 SAVE 다이얼로그 자동취소(AbortError). fallback 없으면 다운로드 미발생(실이슈 재현)','bad');log('picker '+e.name);}}
+function dlBlobAnchor(){dl('rbi-blob.txt','blob anchor download','text/plain');setRes('dl2Res','blob 앵커 다운로드 — 파일보관함 확인','ok');}
+async function dlFetch(){try{const b=new Blob(['fetch to blob download'],{type:'text/plain'});const src=URL.createObjectURL(b);
+  const r=await fetch(src);const bl=await r.blob();const u=URL.createObjectURL(bl);const a=document.createElement('a');a.href=u;a.download='rbi-fetch.txt';a.click();
+  setTimeout(()=>{URL.revokeObjectURL(src);URL.revokeObjectURL(u);},1500);setRes('dl2Res','fetch→blob 다운로드 시도','ok');log('fetch dl');}catch(e){setRes('dl2Res','fetch 실패: '+e,'bad');}}
+function dlWinOpen(){const w=window.open('data:text/plain,RBI-window-open-download');setRes('dl2Res',w?'window.open 다운로드/새창 시도':'window.open 차단됨(팝업)',w?'ok':'bad');log('winopen dl');}
+function dlIframe(){const b=new Blob(['iframe download'],{type:'application/octet-stream'});const u=URL.createObjectURL(b);
+  let f=document.createElement('iframe');f.style.display='none';f.src=u;document.body.appendChild(f);setTimeout(()=>{f.remove();URL.revokeObjectURL(u);},3000);
+  setRes('dl2Res','iframe src=blob 다운로드 시도','ok');log('iframe dl');}
+function dlDataUri(){const a=document.createElement('a');a.href='data:text/plain;charset=utf-8,RBI-dataURI-download';a.download='rbi-datauri.txt';a.click();
+  setRes('dl2Res','data:URI 다운로드 시도','ok');log('datauri dl');}
+
+/* D 팝업/새 탭 */
+function openPopup(url){try{const w=window.open(url,'_blank');setRes('popRes',w?('✅ 새 창/팝업 열림: '+url):'⚠ 팝업 차단됨: '+url,w?'ok':'bad');log('popup '+url+' → '+(w?'ok':'blocked'));}catch(e){setRes('popRes','예외: '+e,'bad');}}
+
+/* F-① IME */
+(function(){const el=document.getElementById('imeInput');
+  el.addEventListener('compositionstart',()=>{log('IME start');});
+  el.addEventListener('compositionupdate',e=>setRes('imeRes','조합 중: '+e.data));
+  el.addEventListener('compositionend',e=>{setRes('imeRes','✅ 확정: "'+e.data+'" · 전체값="'+el.value+'"','ok');log('IME end '+e.data);});
+  el.addEventListener('input',()=>{if(!el.value)setRes('imeRes','대기');});})();
+
+/* F-② 선택 범위 */
+document.addEventListener('selectionchange',()=>{const s=getSelection();const t=s?s.toString():'';
+  if(t&&document.getElementById('selText').contains(s.anchorNode)){setRes('selRes','선택 '+t.length+'자: "'+t.slice(0,40)+'"','ok');}});
+
+/* F-④ 스크롤/휠 */
+function onScroll(){const z=document.getElementById('scrollz');setRes('scrollRes','scrollTop '+Math.round(z.scrollTop)+'px / '+(z.scrollHeight-z.clientHeight)+'px');}
+document.getElementById('scrollz').addEventListener('wheel',e=>{setRes('scrollRes','wheel deltaY='+e.deltaY.toFixed(1)+' deltaMode='+e.deltaMode+' · scrollTop '+Math.round(e.currentTarget.scrollTop)+'px');},{passive:true});
+
+/* F-⑤ 오디오 */
+function playBeep(){try{const AC=window.AudioContext||window.webkitAudioContext;const ac=new AC();const o=ac.createOscillator();const g=ac.createGain();
+  o.frequency.value=660;g.gain.value=0.15;o.connect(g);g.connect(ac.destination);o.start();
+  setRes('audioRes','🔊 재생중 (660Hz)','ok');log('오디오 재생');
+  setTimeout(()=>{o.stop();ac.close();setRes('audioRes','재생 종료','ok');},2000);}catch(e){setRes('audioRes','오디오 실패: '+e,'bad');}}
+
+/* C 비디오 */
 const vid=document.getElementById('vid');
 vid.addEventListener('timeupdate',()=>{if(!vid.paused)setRes('vidRes','▶ 재생중 '+vid.currentTime.toFixed(1)+'s / '+(vid.duration||0).toFixed(1)+'s','ok');});
 vid.addEventListener('playing',()=>{setRes('vidRes','▶ 재생 시작','ok');log('비디오 재생');});
@@ -244,7 +427,6 @@ vid.addEventListener('pause',()=>log('비디오 일시정지'));
 vid.addEventListener('error',()=>{setRes('vidRes','비디오 오류/차단','bad');log('비디오 오류');});
 function playVid(){vid.muted=true;vid.play().then(()=>log('play() 성공')).catch(e=>{setRes('vidRes','재생 실패: '+e,'bad');log('play 실패 '+e);});}
 
-/* 자동화 편의: 첫 입력 포커스 */
 window.addEventListener('load',()=>{document.getElementById('copySrc').focus();});
 </script>
 </body>

@@ -59,7 +59,7 @@ npm start                                 # → http://localhost:4321
 
 ### CLI로도 실행
 ```bash
-node runner.js https://release.aircode.com dev01@aircode.com '비밀번호' http://193.200.10.116:8900
+node runner.js https://release.aircode.com dev01@aircode.com '비밀번호' http://193.200.10.98:8900
 # → results/<시각>/report.html
 ```
 

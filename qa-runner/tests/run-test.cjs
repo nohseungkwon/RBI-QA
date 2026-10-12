@@ -1,5 +1,5 @@
 /**
- * RBI LiteClient 기능 점검 자동화 (통합 점검: 초기로딩·격리콘텐츠·네비·컨텍스트메뉴·파일보관함·업로드/다운로드·찾기·인쇄·클립보드·세션·CDR·사용자메뉴·RBI UI / 항목별 <id>.png, before·after 캡처)
+ * RBI LiteClient 기능 점검 자동화 (통합 점검: 초기로딩·격리콘텐츠·네비·컨텍스트메뉴·업로드/다운로드·파일보관함(상태확인)·찾기·인쇄·클립보드·세션·CDR·사용자메뉴·RBI UI / 항목별 <id>.png, before·after 캡처)
  *   실행: node tests/run-test.cjs   (환경변수 D/U/P/T 로 도메인·계정·타겟 지정)
  *   결과: test-results/YYYYMMDDHHMMSS/  (체크별 스크린샷 + report.html + report.json)
  *
@@ -199,49 +199,56 @@ async function runTest(cfg, onProgress = () => {}) {
     await check('3. 컨텍스트 메뉴', '3-7', '인쇄 항목', async () => (await cntF('#id-rbi-ui-contextmenu-print')) > 0);
     await check('3. 컨텍스트 메뉴', '3-8', '대시보드 항목', async () => (await cntF('#id-rbi-ui-contextmenu-dashBoard')) > 0);
 
-    // ===== 4. 파일보관함 (열기) =====
+    // ===== 4. 파일 업로드 ===== (보관함은 업로드 전제라 먼저 열기만 하고, 상태 점검은 6장에서 업로드·다운로드 반영 후 수행)
     try { await clickF('id-rbi-ui-contextmenu-filebox'); } catch { try { await clickF('id-rbi-ui-downloadicon'); } catch {} }
     await sleep(1800);
-    await check('4. 파일보관함', '4-1', '팝업 열기', async () => await visF('id-rbi-ui-fileBox'));
-    await check('4. 파일보관함', '4-2', '파일 카운트 배지', async () => { const t = await F.locator('#id-rbi-ui-file-count').first().innerText().catch(() => ''); return { status: t !== '' ? 'pass' : 'fail', note: 'count=' + t }; });
-    await check('4. 파일보관함', '4-3', '파일 목록 표시', async () => { const t = await F.locator('#id-rbi-ui-file-count').first().innerText().catch(() => '0'); const n = parseInt(t) || 0; return { status: n > 0 ? 'pass' : 'warn', note: n + '개 파일' }; });
-    await check('4. 파일보관함', '4-4', '내 PC 버튼 표시', async () => await visF('id-rbi-ui-fileBox-open-file-dialog'));
-    await check('4. 파일보관함', '4-5', '삭제 버튼 표시', async () => await visF('id-rbi-ui-fileBox-delete-files'));
-
-    // ===== 5. 파일 업로드 =====
-    // 5-0 업로드 전 기존 파일 삭제(리스트에 파일 있으면 비우고 진행 — 사용자 요청)
-    await check('5. 파일 업로드', '5-0', '업로드 전 기존 파일 삭제', async () => {
+    // 4-0 업로드 전 기존 파일 삭제(리스트에 파일 있으면 비우고 진행 — 사용자 요청)
+    await check('4. 파일 업로드', '4-0', '업로드 전 기존 파일 삭제', async () => {
       const r = await clearFileBox();
       if (!r.opened) return { status: 'warn', note: '파일보관함 미표시(삭제 생략)' };
       return { status: r.cleared ? 'pass' : 'warn', note: r.before === 0 ? '기존 파일 없음(0개)' : '기존 ' + r.before + '개 → ' + r.after + '개 (전체선택·삭제)' };
     });
     const upFile = path.join(outDir, 'qa-upload-sample.txt'); fs.writeFileSync(upFile, 'RBI QA 업로드 테스트 ' + st);
-    await check('5. 파일 업로드', '5-1', '내 PC→파일 선택 다이얼로그', async () => {
-      const [fc] = await Promise.all([viewer.waitForEvent('filechooser', { timeout: 9000 }), clickF('id-rbi-ui-fileBox-open-file-dialog')]);
+    await check('4. 파일 업로드', '4-1', '내 PC→파일 선택 다이얼로그', async () => {
+      // 내PC 버튼이 빈 보관함 상태/스크롤 위치에 따라 not visible로 잡힐 수 있어 3단 폴백(일반→force→JS click)
+      const btn = F.locator('#id-rbi-ui-fileBox-open-file-dialog').first();
+      try { await btn.scrollIntoViewIfNeeded({ timeout: 1500 }); } catch {}
+      const clickBtn = async () => {
+        try { await btn.click({ timeout: 4000 }); return; } catch {}
+        try { await btn.click({ force: true, timeout: 2500 }); return; } catch {}
+        await F.evaluate(() => { const b = document.querySelector('#id-rbi-ui-fileBox-open-file-dialog'); if (b) b.click(); });
+      };
+      const [fc] = await Promise.all([viewer.waitForEvent('filechooser', { timeout: 9000 }), clickBtn()]);
       await fc.setFiles(upFile); return { status: 'pass', note: 'filechooser 감지 + 파일 지정' };
     });
-    // 5-4 덮어쓰기 확인 팝업이면 "확인"으로 진행 (동일 파일명 재업로드 시)
+    // 4-2 덮어쓰기 확인 팝업이면 "확인"으로 진행 (동일 파일명 재업로드 시)
     let overwrote = false;
     for (let i = 0; i < 5; i++) { if (await visF('id-rbi-ui-rbiPopup')) { overwrote = true; break; } await sleep(600); }
     if (overwrote) { try { await F.locator('#id-rbi-ui-rbiPopup-confirmBtn').click({ force: true }); } catch {} await sleep(1500); }
-    await check('5. 파일 업로드', '5-4', '중복 파일 덮어쓰기 → 확인 진행', async () => ({ status: overwrote ? 'pass' : 'warn', note: overwrote ? '덮어쓰기 팝업 → 확인 클릭' : '중복 팝업 미발생(신규 파일)' }));
+    await check('4. 파일 업로드', '4-2', '중복 파일 덮어쓰기 → 확인 진행', async () => ({ status: overwrote ? 'pass' : 'warn', note: overwrote ? '덮어쓰기 팝업 → 확인 클릭' : '중복 팝업 미발생(신규 파일)' }));
     // 업로드 파일이 목록에 뜨고 검사완료(다운로드 버튼 action-ico 등장)될 때까지 폴링(비운 뒤 새 파일이라 검사중→보관중 대기)
     let upCnt = 0, dlBtn = 0;
     for (let i = 0; i < 16; i++) { upCnt = await fileCount(); dlBtn = await cntF('button[class*="action-ico-"]'); if (upCnt >= 1 && dlBtn >= 1) break; await sleep(2000); }
-    await check('5. 파일 업로드', '5-2', '업로드 후 목록 표시', async () => ({ status: upCnt > 0 ? 'pass' : 'warn', note: upCnt + '개 파일' + (dlBtn > 0 ? ' · 검사완료' : ' · 검사중') }));
-    await check('5. 파일 업로드', '5-3', '업로드 상태 표시', async () => { const t = await F.locator('#id-rbi-ui-fileBox').innerText().catch(() => ''); const ok = /업로드|보관|완료|검사|무해/.test(t); return { status: ok ? 'pass' : 'warn', note: ok ? '상태 텍스트 감지' : '상태 미확인' }; });
+    await check('4. 파일 업로드', '4-3', '업로드 후 목록 표시', async () => ({ status: upCnt > 0 ? 'pass' : 'warn', note: upCnt + '개 파일' + (dlBtn > 0 ? ' · 검사완료' : ' · 검사중') }));
+    await check('4. 파일 업로드', '4-4', '업로드 상태 표시', async () => { const t = await F.locator('#id-rbi-ui-fileBox').innerText().catch(() => ''); const ok = /업로드|보관|완료|검사|무해/.test(t); return { status: ok ? 'pass' : 'warn', note: ok ? '상태 텍스트 감지' : '상태 미확인' }; });
 
-    // ===== 6. 파일 다운로드 =====
-    await check('6. 파일 다운로드', '6-1', '다운로드 버튼 표시', async () => (await cntF('button[class*="action-ico-"]')) > 0 ? { status: 'pass', note: '다운로드 버튼(action-ico) 존재' } : { status: 'warn', note: '다운로드 버튼 미발견(빈 보관함?)' });
-    await check('6. 파일 다운로드', '6-2', '다운로드 클릭→파일 저장', async () => {
+    // ===== 5. 파일 다운로드 ===== (방금 업로드한 파일을 내려받아 왕복 동작 확인)
+    await check('5. 파일 다운로드', '5-1', '다운로드 버튼 표시', async () => (await cntF('button[class*="action-ico-"]')) > 0 ? { status: 'pass', note: '다운로드 버튼(action-ico) 존재' } : { status: 'warn', note: '다운로드 버튼 미발견(빈 보관함?)' });
+    await check('5. 파일 다운로드', '5-2', '다운로드 클릭→파일 저장', async () => {
       if ((await cntF('button[class*="action-ico-"]')) === 0) return { status: 'warn', note: '다운로드 버튼 없음' };
       const [dl] = await Promise.all([viewer.waitForEvent('download', { timeout: 12000 }), F.locator('button[class*="action-ico-"]').first().click()]);
       await dl.saveAs(path.join(outDir, 'download_' + (dl.suggestedFilename() || 'file'))).catch(() => {});
       return { status: 'pass', note: '다운로드: ' + dl.suggestedFilename() };
     });
-    manual('6. 파일 다운로드', '6-3', '다운로드 파일 내용 일치', '업로드 원본과 비교 — 수동');
-    // 4-6 파일보관함 닫기
-    await check('4. 파일보관함', '4-6', '파일보관함 닫기(X)', async () => {
+    manual('5. 파일 다운로드', '5-3', '다운로드 파일 내용 일치', '업로드 원본과 비교 — 수동');
+
+    // ===== 6. 파일보관함 (상태 확인 — 업로드·다운로드 반영 후) =====
+    await check('6. 파일보관함', '6-1', '팝업 표시(업로드·다운로드 후 유지)', async () => await visF('id-rbi-ui-fileBox'));
+    await check('6. 파일보관함', '6-2', '파일 카운트 배지', async () => { const t = await F.locator('#id-rbi-ui-file-count').first().innerText().catch(() => ''); return { status: t !== '' ? 'pass' : 'fail', note: 'count=' + t }; });
+    await check('6. 파일보관함', '6-3', '파일 목록 표시(업로드 파일 반영)', async () => { const n = await fileCount(); return { status: n > 0 ? 'pass' : 'warn', note: n + '개 파일(업로드 파일 포함)' }; });
+    await check('6. 파일보관함', '6-4', '내 PC 버튼 표시', async () => await visF('id-rbi-ui-fileBox-open-file-dialog'));
+    await check('6. 파일보관함', '6-5', '삭제 버튼 표시', async () => await visF('id-rbi-ui-fileBox-delete-files'));
+    await check('6. 파일보관함', '6-6', '파일보관함 닫기(X)', async () => {
       const closed = await closeFileBox();
       return { status: closed ? 'pass' : 'warn', note: closed ? '닫기 동작' : '닫기 실패' };
     });
